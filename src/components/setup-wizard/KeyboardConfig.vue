@@ -1,46 +1,18 @@
 <template>
-  <div class="px-4">
-    <h1 class="text-5xl font-bold text-center mb-8">Initial Keyboard Config</h1>
-    <p class="font-bold">Keyboard Matrix Setup</p>
-    <div class="grid grid-cols-2 gap-2 mb-8">
-      <InputLabel
-        placeholder="1"
-        input-type="number"
-        label="Matrix Width"
-        v-model="keyboardWidth"
-      ></InputLabel>
-      <InputLabel
-        placeholder="1"
-        input-type="number"
-        label="Matrix Height"
-        v-model="keyboardHeight"
-      ></InputLabel>
-    </div>
-    <p class="font-bold">Microcontroller Pins</p>
-    <p>Row Pins ({{ rowPins.length }})</p>
-    <div
-      class="border rounded border-opacity-40 border-white p-2 grid grid-cols-1 gap-2 mb-4"
-    >
-      <input
-        class="input input-sm input-bordered"
-        type="text"
-        v-for="(pin, index) in rowPins"
-        v-model="rowPins[index]"
-        placeholder="board.GP17"
-      />
-    </div>
-    <p>Column Pins ({{ colPins.length }})</p>
-    <div
-      class="border rounded border-opacity-40 border-white p-2 grid grid-cols-1 gap-2 mb-4"
-    >
-      <input
-        class="input input-sm input-bordered"
-        type="text"
-        v-for="(pin, index) in colPins"
-        v-model="colPins[index]"
-        placeholder="board.GP17"
-      />
-    </div>
+  <div class="flex">
+    <ul class="menu bg-base-100 w-56 flex-shrink-0 pt-8">
+      <li><a>Keymap</a></li>
+      <li><a>Layout Options</a></li>
+      <hr class="border-white border-opacity-40">
+      <li><a>Firmware</a></li>
+      <li><a>Matrix</a></li>
+      <li><a>Pins</a></li>
+      <li><a>Layout</a></li>
+      <li><a>Raw Keymap</a></li>
+    </ul>
+  <div class="px-4 pt-8 flex-1 overflow-x-auto h-screen">
+    <h1 class="text-5xl font-bold text-center mb-8">Keyboard Config</h1>
+
     <p class="font-bold">Keymap</p>
     <div>
       <div v-for="(layer, layerindex) in keymap">
@@ -71,22 +43,45 @@
       >
     </p>
     <div>
-      {{layoutContents}}
+      {{
+        layoutContents
+          ? "has layout"
+          : "layout file not found, place layout.json in the keyboard folder"
+      }}
+      <div class="flex items-center">
+
+      Layers
+      <div class="tabs tabs-boxed ml-2">
+        <div class="tab" :class="{'tab-active': index === selectedLayer}" v-for="(layer,index) in keymap">0</div>
+      </div>
+      </div>
+      <div>selected {{selectedKey}} {{selectedVariants}}</div>
+     <VariantSwitcher></VariantSwitcher>
+      <keyboard-layout
+        :key-layout="keyLayout"
+        :keymap="keymap"
+      ></keyboard-layout>
+      <KeyPicker @setKey="setKey"></KeyPicker>
     </div>
-    <textarea class="textarea textarea-bordered w-full mt-2"></textarea>
+    <!--    <textarea class="textarea textarea-bordered w-full mt-2"></textarea>-->
     <div class="py-4 flex justify-center">
       <div class="btn btn-sm btn-primary" @click="saveKeymap">
         Save Keymap config to Keyboard
       </div>
     </div>
   </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
 import { computed, onMounted, ref, watch } from "vue";
 import InputLabel from "@/components/ui/InputLabel.vue";
-import filbert from "filbert";
+import filbert from 'filbert'
 import sliceLines from "slice-lines";
+import KeyboardLayout from "@/components/KeyboardLayout.vue";
+import {selectedKey, selectedkeyboard, selectedLayer, selectedVariants} from "@/store";
+import { matrixPositionToIndex } from "@/helpers/matrix";
+import VariantSwitcher from "@/components/VariantSwitcher.vue";
 const props = defineProps(["codeContents", "layoutContents"]);
 
 const rowPins = ref<string[]>([""]);
@@ -107,7 +102,7 @@ const keyboardHeight = computed({
       }
       pinDiff--;
     }
-    updateKeymapLength()
+    updateKeymapLength();
   },
 });
 const colPins = ref<string[]>([""]);
@@ -133,7 +128,7 @@ const keyboardWidth = computed({
 });
 
 const keymap = ref<string[][]>([["", ""]]);
-const keyLayout = ref('')
+const keyLayout = ref({ keys: [], info: {} });
 
 const codepyTmp = ref("");
 
@@ -156,23 +151,22 @@ const codepyTmp = ref("");
 const updateKeymapLength = () => {
   // keymap.value = [Array(rowPins.value.length * colPins.value.length).fill("")];
   // check each layer
-  keymap.value.forEach((layer,index) => {
+  keymap.value.forEach((layer, index) => {
     // count keys
-    let keyDiffRel = keyboardWidth.value * keyboardHeight.value - layer.length
-    let diffAdd = keyDiffRel > 0
-    let keyDiff = Math.abs(keyDiffRel)
-    console.log(keyDiff, diffAdd)
+    let keyDiffRel = keyboardWidth.value * keyboardHeight.value - layer.length;
+    let diffAdd = keyDiffRel > 0;
+    let keyDiff = Math.abs(keyDiffRel);
+    console.log(keyDiff, diffAdd);
     // add/remove missing
     while (keyDiff > 0) {
       if (diffAdd) {
-        keymap.value[index].push("");
+        keymap.value[index].push("KC.TRNS");
       } else {
         keymap.value[index].pop();
       }
       keyDiff--;
     }
-  })
-
+  });
 };
 
 const saveKeymap = async () => {
@@ -180,6 +174,7 @@ const saveKeymap = async () => {
     rowPins: rowPins.value,
     colPins: colPins.value,
     keymap: keymap.value,
+    diodeDirection: selectedkeyboard.value.layoutContents.matrix.diodeDirection
   };
   const saveResponse = await (window as any).electronAPI.saveKeymap(
     JSON.stringify(data)
@@ -198,7 +193,8 @@ const extractData = ({
   propertyName: string;
   marker: string;
 }): { markedPythonDoc: string; data: any } | { error: boolean } => {
-  const codeast = filbert.parse(pythonDoc, {
+  const cleanedPythonDoc = pythonDoc.replaceAll(',)',')')
+  const codeast = filbert.parse(cleanedPythonDoc, {
     range: true,
     locations: true,
   });
@@ -238,7 +234,8 @@ const extractData = ({
   });
   return result;
 };
-
+import {layoutVariants} from "@/store";
+import KeyPicker from "@/components/setup-wizard/KeyPicker.vue";
 onMounted(() => {
   // go through the code.py file for each datapoint to look up
   // pass the marked code file to the next
@@ -326,12 +323,104 @@ onMounted(() => {
   }
   codepyTmp.value = extractData3.markedPythonDoc;
 
-
   // parse Layout file
-  const layout = JSON.parse(props.layoutContents)
-  console.log(layout)
+  if(!props.layoutContents) return
+  const layout = props.layoutContents;
+  let keyboardInfo = ref({ info: {}, keys: [] });
 
+  //iterate over rows
+  let currentX = 0;
+  let currentY = 0;
+  let keydata = undefined; // data to carry over to the next key until it is overwritten
+  let firstKeyInRow = true;
+  layoutVariants.value = layout.layouts.labels
+  selectedVariants.value = layoutVariants.value.map(a=> {return 0})
+  layout.layouts.keymap.forEach((row) => {
+    if (Array.isArray(row)) {
+      // normal row
+      row.forEach((keyOrData) => {
+        let key = { labels: [] };
+        if (typeof keyOrData === "string") {
+          // this is a key
+          let labels = keyOrData.split("\n");
+          if (labels.length === 1) {
+            // just the main label
+            labels = ["", "", "", "", "", "", "", "", "", keyOrData];
+            key.matrixPos = keyOrData
+          }
+          else if (labels.length === 4) {
+            // shortened labels top left and bottom right
+            // labels = [keyOrData];
+            key.matrixPos = labels[0]
+            key.variant = labels[3].split(',').map(a=>Number(a))
+          }else{
+            // all labels just keep split
+            key.matrixPos = keyOrData[0]
+            // key.variant = keyOrData[3]
+          }
+          key.labels = labels;
+          // Position data
+          if (keydata) {
+            key = { ...key, ...keydata };
+            if (keydata.y) currentY = keydata.y;
+            if (keydata.x) currentX = keydata.x + currentX;
+            if(firstKeyInRow){
+              key.x = currentX;
+              firstKeyInRow = false;
+            }else {
+              key.x = currentX;
+            }
+          }
+          if (!key.y) key.y = currentY;
+          if (!key.x) key.x = currentX;
+          keydata = undefined;
+          if(!key.w || key.w === 1) {
+            currentX++;
+          }else{
+            currentX = currentX + key.w
+          }
+          keyboardInfo.value.keys.push(key);
+        } else {
+          // this is data for the next key
+          keydata = keyOrData;
+        }
+        // add 1 to left distance // next key
+      });
+      // add 1 to top distance // next row
+      currentX = 0;
+      firstKeyInRow = true
+      currentY++;
+    } else {
+      keyboardInfo.value.info = layout[0];
+    }
+  });
+  keyLayout.value = keyboardInfo.value;
+  keyLayout.value.info.matrix = [rowPins.value.length, colPins.value.length];
 });
+
+const setKey = (keyCode) => {
+  const keyIndex = matrixPositionToIndex({
+    pos: selectedKey.value.key,
+    matrixSize: keyLayout.value.info.matrix,
+  });
+  console.log("setting ", selectedKey.value, "to", keyCode, "at", keyIndex);
+  const currentKeyAction = keymap.value[selectedLayer.value][keyIndex];
+  if (!keyCode.includes("(")) {
+    // could set this as arg in a key
+    if (currentKeyAction.includes("(") && selectedKey.value.args) {
+      // only set this as arg
+      let action = currentKeyAction.split("(")[0].replace(")", "");
+      keymap.value[selectedLayer.value][keyIndex] =
+        action + "(" + keyCode + ")";
+      return;
+    }
+  }
+  keymap.value[selectedLayer.value][keyIndex] = keyCode;
+};
+
+
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+
+</style>

@@ -5,54 +5,52 @@ const decompress = require("decompress");
 const request = require('request');
 const { shell } = require('electron')
 let keyboardPath = '' // uses no slash at the end
+let win
 const appDir = app.getPath('appData') + '/pog/';
+const { default: installExtension, VUEJS3_DEVTOOLS } = require('electron-devtools-installer');
 function downloadFile(file_url , targetPath){
   if (!fs.existsSync(appDir)){
     fs.mkdirSync(appDir);
   }
   // Save variable to know progress
-  var received_bytes = 0;
-  var total_bytes = 0;
+  let received_bytes = 0;
+  let total_bytes = 0;
+  win.webContents.send('update-kmk-progress', {state:'downloading', progress: 0})
 
-  var req = request({
-    method: 'GET',
-    uri: file_url
-  });
-
-  var out = fs.createWriteStream(targetPath);
-  req.pipe(out);
-
-  req.on('response', function ( data ) {
+  let out = fs.createWriteStream(targetPath);
+  request.get(file_url)
+  .on('response',  ( data ) => {
     // Change the total bytes value to get progress later.
-    total_bytes = parseInt(data.headers['content-length' ]);
-  });
-
-  // req.on('data', function(chunk) {
-  //   // Update the received bytes
-  //   received_bytes += chunk.length;
-  //
-  //   showProgress(received_bytes, total_bytes);
-  // });
-
-  req.on('end', function() {
-    // alert("File succesfully downloaded");
+    total_bytes = parseInt(data.headers['content-length']);
+    // console.log('updated total', total_bytes, data.headers)
+  })
+  .on('data', (chunk) => {
+    // Update the received bytes
+    received_bytes += chunk.length;
+    console.log(total_bytes, received_bytes)
+    win.webContents.send('update-kmk-progress', { state:'downloading', progress: received_bytes/total_bytes })
+  })
+  .pipe(out)
+  .on('finish', () => {
     console.log('kmk downloaded')
+    win.webContents.send('update-kmk-progress', {state:'unpacking', progress: 0})
     decompress(`${appDir}kmk.zip`, `${appDir}/kmk`)
         .then((files) => {
           console.log('kmk decompressed',files.length);
+          win.webContents.send('update-kmk-progress', {state:'copying', progress: 0})
         })
         .catch((error) => {
           console.log(error);
         });
     try {
       console.log('moving kmk into keyboard')
-      fs.moveSync(`${appDir}kmk/kmk_firmware-master/kmk`, `${keyboardPath}/kmk`, { overwrite: false })
-      console.log('success!')
+      fs.cp(`${appDir}kmk/kmk_firmware-master/kmk`, `${keyboardPath}/kmk`, { recursive: true }, (e)=>{
+        console.log('Copying of KMK done',e)
+        win.webContents.send('update-kmk-progress', {state:'done', progress: 0})
+      })
     } catch (err) {
       console.error(err)
     }
-
-
   });
 }
 
@@ -63,23 +61,23 @@ async function handleFileOpen() {
   if (canceled) {
     return;
   } else {
-    const folderContents = fs.readdirSync(`${filePaths[0]}`);
+    const folderContents = await fs.promises.readdir(`${filePaths[0]}`);
     // check for kmk, code.py and boot.py
     keyboardPath = filePaths[0]
     let codeContents = undefined
     if(folderContents.includes('code.py')){
-      codeContents = fs.readFileSync(`${keyboardPath}/code.py`, {encoding:'utf8', flag:'r'})
+      codeContents = await fs.promises.readFile(`${keyboardPath}/code.py`, {encoding:'utf8', flag:'r'})
     }
     let layoutContents = undefined
-    if(folderContents.includes('layout.json')){
-      layoutContents = fs.readFileSync(`${keyboardPath}/layout.json`, {encoding:'utf8', flag:'r'})
+    if(folderContents.includes('pog.json')){
+      layoutContents = JSON.parse(await fs.promises.readFile(`${keyboardPath}/pog.json`, {encoding:'utf8', flag:'r'}))
     }
     return {
       path: filePaths[0],
       hasKmk: folderContents.includes("kmk"),
       hasCode: folderContents.includes("code.py"),
       hasBoot: folderContents.includes("boot.py"),
-      hasLayout: folderContents.includes("layout.json"),
+      hasLayout: folderContents.includes("pog.json"),
       codeContents,
       layoutContents
     };
@@ -89,7 +87,12 @@ async function handleFileOpen() {
 const handleKeymapSave = (jsondata) => {
   console.log('saving keymap', jsondata)
   const data = JSON.parse(jsondata)
+  const codeblockraw = fs.readFileSync(`${keyboardPath}/code.py`, {encoding:'utf8', flag:'r'})
+  console.log(codeblockraw)
+  const codeblock = codeblockraw.match(/# CodeBlock([\S\s]*)# \/CodeBlock/gm)[1]
+  console.log(codeblock)
   // create basic keymap file
+  // grab old codeblocks
   let keymapString =
 `print("Starting")
 
@@ -111,18 +114,24 @@ keyboard = KMKKeyboard()
 keyboard.col_pins = (${data.colPins.join(', ')})
 # Rows
 keyboard.row_pins = (${data.rowPins.join(', ')})
-keyboard.diode_orientation = DiodeOrientation.COL2ROW
+# Diode Direction
+keyboard.diode_orientation = DiodeOrientation.${data.diodeDirection}
 
 # Keymap
 keyboard.keymap = [
     ${ data.keymap.map(layer=> '['+layer.join(', ')+']').join(', ') }
 ]
 
+# CodeBlock
+${codeblock ? codeblock: ''}
+# /CodeBlock
+
 if __name__ == '__main__':
     keyboard.go()
 `
-  fs.writeFileSync(keyboardPath+'/code.py', keymapString)
-  console.log("File written successfully\n");
+  fs.writeFile(keyboardPath+'/code.py', keymapString, () => {
+    console.log("File written successfully\n");
+  })
 }
 
 const updateLocalKMKcopy = () => {
@@ -132,10 +141,10 @@ const updateLocalKMKcopy = () => {
 }
 
 function createWindow() {
-  const win = new BrowserWindow({
-    width: 800,
-    height: 600,
-    minWidth:500,
+   win = new BrowserWindow({
+    width: 1100,
+    height: 800,
+    minWidth:700,
     minHeight: 200,
     titleBarStyle: "hidden",
     webPreferences: {
@@ -151,6 +160,9 @@ function createWindow() {
   win.loadURL("http://127.0.0.1:5173/Users/janlunge/Code/pog/dist");
 }
 app.whenReady().then(() => {
+  installExtension(VUEJS3_DEVTOOLS)
+      .then((name) => console.log(`Added Extension:  ${name}`))
+      .catch((err) => console.log('An error occurred: ', err));
   ipcMain.handle("dialog:openFile", handleFileOpen);
   ipcMain.handle("updateLocalKMKcopy", updateLocalKMKcopy);
   // ipcMain.handle("saveKeymap", handleKeymapSave);
