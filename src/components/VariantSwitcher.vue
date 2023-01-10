@@ -1,6 +1,6 @@
 <template>
   <div>
-    variants
+    <p class="text-xl font-bold mb-4">Layout Options</p>
     <VariantOption v-for="(variant,index) in layoutVariants" :variant="variant" :index="index"/>
   </div>
 </template>

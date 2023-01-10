@@ -4,11 +4,18 @@ import KeyboardConfig from "@/components/setup-wizard/KeyboardConfig.vue";
 import NewKeyboardSetup from "@/views/newKeyboardSetup.vue";
 
 import { selectedkeyboard } from "@/store";
+import router from "@/router";
 
 const openFolderModal = async () => {
   selectedkeyboard.value = await (window as any).electronAPI.openFile();
   if (selectedkeyboard.value.path) {
+    if(selectedkeyboard.value.hasLayout){
+
+      wizardStep.value = 2;
+      router.push('/keymap')
+    }else{
     wizardStep.value = 1;
+    }
   }
   console.log(selectedkeyboard);
 };
@@ -17,7 +24,7 @@ const wizardStep = ref(0);
 </script>
 
 <template>
-  <main class="h-full w-full pt-8">
+  <main class="h-full w-full">
     <div
       class="h-full p-2 text-center w-full flex flex-col items-center"
       v-if="wizardStep === 0"
@@ -49,11 +56,10 @@ const wizardStep = ref(0);
       <new-keyboard-setup
         :selected-keyboard="selectedkeyboard"
         @back="wizardStep--"
-        @next="wizardStep++"
+        @next="wizardStep++;$router.push('/keymap')"
       ></new-keyboard-setup>
     </div>
     <div v-else-if="wizardStep === 2">
-      <!--      <div class="btn btn-xs" @click="wizardStep&#45;&#45;">back</div>-->
       <keyboard-config
         :code-contents="selectedkeyboard.codeContents"
         :layoutContents="selectedkeyboard.layoutContents"

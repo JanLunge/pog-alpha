@@ -17,3 +17,6 @@ export const selectedkeyboard = ref({
 
 export const selectedVariants = ref({})
 export const layoutVariants = ref(undefined)
+
+export const keymap = ref<string[][]>([["", ""]]);
+export const keyLayout = ref({ keys: [], info: {} });

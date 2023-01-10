@@ -87,12 +87,30 @@ async function handleFileOpen() {
 const handleKeymapSave = (jsondata) => {
   console.log('saving keymap', jsondata)
   const data = JSON.parse(jsondata)
-  const codeblockraw = fs.readFileSync(`${keyboardPath}/code.py`, {encoding:'utf8', flag:'r'})
-  console.log(codeblockraw)
-  const codeblock = codeblockraw.match(/# CodeBlock([\S\s]*)# \/CodeBlock/gm)[1]
-  console.log(codeblock)
+  // const codeblockraw = fs.readFileSync(`${keyboardPath}/code.py`, {encoding:'utf8', flag:'r'})
+  // console.log(codeblockraw)
+  // const codeblock = codeblockraw.match(/# CodeBlock([\S\s]*)# \/CodeBlock/gm)[1]
+  // console.log(codeblock)
   // create basic keymap file
   // grab old codeblocks
+  let pythonImports = ''
+  let kmkAddons = ''
+  let codeblock = ''
+  // testing encoder enable
+  if(true){
+    pythonImports += '\nfrom kmk.modules.layers import Layers\n' +
+        'from kmk.modules.encoder import EncoderHandler\nfrom kmk.extensions.media_keys import MediaKeys\n'
+    kmkAddons += '\nlayers = Layers()\n' +
+        'encoder_handler = EncoderHandler()\n' +
+        'keyboard.modules = [layers, encoder_handler]\nkeyboard.extensions.append(MediaKeys())\n'
+    codeblock += '# Encoder\n' +
+        'encoder_handler.pins = (\n' +
+        '    (board.GP13, board.GP14, None,),\n' +
+        ')\n' +
+        'encoder_handler.map = [ \n' +
+        '    (( KC.VOLD, KC.VOLU,),),\n' +
+        ']\n'
+  }
   let keymapString =
 `print("Starting")
 
@@ -107,8 +125,10 @@ import usb_hid
 from kmk.kmk_keyboard import KMKKeyboard
 from kmk.keys import KC
 from kmk.scanners import DiodeOrientation
+${pythonImports}
 
 keyboard = KMKKeyboard()
+${kmkAddons}
 
 # Cols
 keyboard.col_pins = (${data.colPins.join(', ')})
@@ -122,9 +142,7 @@ keyboard.keymap = [
     ${ data.keymap.map(layer=> '['+layer.join(', ')+']').join(', ') }
 ]
 
-# CodeBlock
-${codeblock ? codeblock: ''}
-# /CodeBlock
+${codeblock}
 
 if __name__ == '__main__':
     keyboard.go()
@@ -159,6 +177,9 @@ function createWindow() {
   // win.loadFile("dist/index.html");
   win.loadURL("http://127.0.0.1:5173/Users/janlunge/Code/pog/dist");
 }
+const scanForKeyboards = () => {
+
+}
 app.whenReady().then(() => {
   installExtension(VUEJS3_DEVTOOLS)
       .then((name) => console.log(`Added Extension:  ${name}`))
@@ -170,9 +191,11 @@ app.whenReady().then(() => {
     console.log('trying to save keymap')
     handleKeymapSave(data)
   })
+  scanForKeyboards()
   createWindow();
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
+      scanForKeyboards()
       createWindow();
     }
   });

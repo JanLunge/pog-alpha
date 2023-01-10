@@ -5,7 +5,7 @@ const router = useRoute()
 </script>
 
 <template>
-    <div class="wrapper">
+    <div class="">
       <div class="titlebar"></div>
       <div class="content">
       <RouterView />
@@ -26,7 +26,7 @@ const router = useRoute()
   width: 100%;
 }
 .content {
-  overflow: auto;
+  overflow: hidden;
   height: 100vh;
 
 }

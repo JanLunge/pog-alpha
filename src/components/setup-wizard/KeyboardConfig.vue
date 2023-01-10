@@ -1,72 +1,24 @@
 <template>
   <div class="flex">
-    <ul class="menu bg-base-100 w-56 flex-shrink-0 pt-8">
-      <li><a>Keymap</a></li>
-      <li><a>Layout Options</a></li>
+    <ul class="menu bg-base-100 w-56 flex-shrink-0 pt-8 border-r border-opacity-40 border-white">
+      <p class="p-4 text-xl font-bold text-center">pog</p>
+      <li><router-link to="/keymap">Keymap</router-link></li>
+      <li><router-link to="/layout-options">Layout Options</router-link></li>
       <hr class="border-white border-opacity-40">
-      <li><a>Firmware</a></li>
-      <li><a>Matrix</a></li>
-      <li><a>Pins</a></li>
-      <li><a>Layout</a></li>
-      <li><a>Raw Keymap</a></li>
+      <li><router-link to="/firmware">Firmware</router-link></li>
+      <li><router-link to="/matrix">Matrix</router-link></li>
+      <li><router-link to="/pins">Pins</router-link></li>
+      <li><router-link to="/layout">Layout</router-link></li>
+      <li><router-link to="/raw-keymap">Raw Keymap</router-link></li>
+      <li><router-link to="/encoder">Encoder</router-link></li>
     </ul>
   <div class="px-4 pt-8 flex-1 overflow-x-auto h-screen">
     <h1 class="text-5xl font-bold text-center mb-8">Keyboard Config</h1>
+    <router-view></router-view>
 
-    <p class="font-bold">Keymap</p>
-    <div>
-      <div v-for="(layer, layerindex) in keymap">
-        layer {{ layerindex }}
-        <div
-          class="border rounded border-opacity-40 border-white p-2 grid gap-2 mb-4"
-          :style="{
-            gridTemplateColumns: `repeat(${colPins.length}, minmax(0, 1fr))`,
-          }"
-        >
-          <input
-            class="input input-sm input-bordered"
-            v-for="(key, index) in layer"
-            v-model="keymap[layerindex][index]"
-            placeholder="KC.A"
-          />
-        </div>
-      </div>
-    </div>
-    <p class="font-bold">Layout (WIP)</p>
-    <p>
-      define visual keymap with the layout editor at
-      <a
-        class="btn btn-xs btn-link"
-        target="_blank"
-        href="http://www.keyboard-layout-editor.com/"
-        >Keyboard Layout Editor</a
-      >
-    </p>
-    <div>
-      {{
-        layoutContents
-          ? "has layout"
-          : "layout file not found, place layout.json in the keyboard folder"
-      }}
-      <div class="flex items-center">
-
-      Layers
-      <div class="tabs tabs-boxed ml-2">
-        <div class="tab" :class="{'tab-active': index === selectedLayer}" v-for="(layer,index) in keymap">0</div>
-      </div>
-      </div>
-      <div>selected {{selectedKey}} {{selectedVariants}}</div>
-     <VariantSwitcher></VariantSwitcher>
-      <keyboard-layout
-        :key-layout="keyLayout"
-        :keymap="keymap"
-      ></keyboard-layout>
-      <KeyPicker @setKey="setKey"></KeyPicker>
-    </div>
-    <!--    <textarea class="textarea textarea-bordered w-full mt-2"></textarea>-->
     <div class="py-4 flex justify-center">
       <div class="btn btn-sm btn-primary" @click="saveKeymap">
-        Save Keymap config to Keyboard
+        Save python code to Keyboard
       </div>
     </div>
   </div>
@@ -126,9 +78,8 @@ const keyboardWidth = computed({
     updateKeymapLength();
   },
 });
+import {keymap, keyLayout} from "@/store";
 
-const keymap = ref<string[][]>([["", ""]]);
-const keyLayout = ref({ keys: [], info: {} });
 
 const codepyTmp = ref("");
 
@@ -174,8 +125,11 @@ const saveKeymap = async () => {
     rowPins: rowPins.value,
     colPins: colPins.value,
     keymap: keymap.value,
-    diodeDirection: selectedkeyboard.value.layoutContents.matrix.diodeDirection
+    diodeDirection: selectedkeyboard.value.layoutContents.matrix.diodeDirection,
+    config: selectedkeyboard.value
   };
+  // save to pog.json
+  selectedkeyboard.value.layoutContents.currentKeymap = keymap.value
   const saveResponse = await (window as any).electronAPI.saveKeymap(
     JSON.stringify(data)
   );
@@ -268,9 +222,18 @@ onMounted(() => {
       return a.arguments.map((b) => {
         if (b.type === "CallExpression") {
           let props = b.arguments.map(
-            (p) => `${p.object.name}.${p.property.name}`
+            (p) => {
+              // if raw value
+              if(p.type === 'Literal'){
+                return String(p.value)
+              }
+            return `${p.object.name}.${p.property.name}`}
           );
-          return `${b.callee.name}(${props.join(",")})`;
+          if(b.callee.type === "MemberExpression"){
+            return `${b.callee.object.name}.${b.callee.property.name}(${props.join(",")})`;
+          }else {
+            return `${b.callee.name}(${props.join(",")})`;
+          }
         }
         // callee.name is needed in case then its arguments are used with the normal notation
         return b.object.name + "." + b.property.name;
@@ -398,29 +361,11 @@ onMounted(() => {
   keyLayout.value.info.matrix = [rowPins.value.length, colPins.value.length];
 });
 
-const setKey = (keyCode) => {
-  const keyIndex = matrixPositionToIndex({
-    pos: selectedKey.value.key,
-    matrixSize: keyLayout.value.info.matrix,
-  });
-  console.log("setting ", selectedKey.value, "to", keyCode, "at", keyIndex);
-  const currentKeyAction = keymap.value[selectedLayer.value][keyIndex];
-  if (!keyCode.includes("(")) {
-    // could set this as arg in a key
-    if (currentKeyAction.includes("(") && selectedKey.value.args) {
-      // only set this as arg
-      let action = currentKeyAction.split("(")[0].replace(")", "");
-      keymap.value[selectedLayer.value][keyIndex] =
-        action + "(" + keyCode + ")";
-      return;
-    }
-  }
-  keymap.value[selectedLayer.value][keyIndex] = keyCode;
-};
-
 
 </script>
 
 <style lang="scss" scoped>
-
+.router-link-active{
+  @apply bg-primary text-black;
+}
 </style>

@@ -39,10 +39,10 @@
         </div>
       </div>
     </div>
-    <div class="w-1/2">
+    <div class="w-1/2 flex flex-col items-center">
       <select
         v-model="selectedkeyboard.layoutContents.controller"
-        class="select"
+        class="select select-bordered"
       >
         <option value="0xcb-helios">0xCB Helios</option>
         <option value="other">other</option>

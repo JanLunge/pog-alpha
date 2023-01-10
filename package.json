@@ -13,7 +13,7 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
-    "@vue/devtools": "^6.0.0-beta.21",
+    "@vue/devtools": "^6.4.5",
     "autoprefixer": "^10.4.13",
     "daisyui": "^2.45.0",
     "decompress": "^4.2.1",

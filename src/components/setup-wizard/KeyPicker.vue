@@ -1,12 +1,12 @@
 <template>
   <div class="tabs tabs-boxed mb-4">
-    <a class="tab tab-active">Basic</a>
-    <a class="tab">Layers</a>
-    <a class="tab">KMK</a>
-    <a class="tab">Backlight</a>
-    <a class="tab">App/Media/Mouse</a>
+    <a class="tab" :class="{'tab-active': category==='basic'}" @click="category = 'basic'">Basic</a>
+    <a class="tab" :class="{'tab-active': category==='layers'}" @click="category = 'layers'">Layers</a>
+    <a class="tab" :class="{'tab-active': category==='kmk'}" @click="category = 'kmk'">KMK</a>
+    <a class="tab" :class="{'tab-active': category==='backlight'}" @click="category = 'backlight'">Backlight</a>
+    <a class="tab" :class="{'tab-active': category==='app'}" @click="category = 'app'">App/Media/Mouse</a>
   </div>
-  <div class="flex key-chooser">
+  <div class="flex key-chooser" v-if="category === 'basic'">
     <div class="row">
       <div class="key" @click="setKey('KC.ESC')">ESC</div>
       <div class="blocker-full"></div>
@@ -102,67 +102,95 @@
     <div class="bonus">
       <div class="key" @click="setKey('KC.NO')">Empty</div>
       <div class="key" @click="setKey('KC.TRNS')">▽</div>
-      <div class="key" @click="setKey('KC.NO')">Num Lock</div>
-      <div class="key" @click="setKey('KC.NO')">/</div>
-      <div class="key" @click="setKey('KC.NO')">*</div>
-      <div class="key" @click="setKey('KC.NO')">-</div>
-      <div class="key" @click="setKey('KC.NO')">+</div>
-      <div class="key" @click="setKey('KC.NO')">Num Enter</div>
-      <div class="key" @click="setKey('KC.NO')">1</div>
-      <div class="key" @click="setKey('KC.NO')">2</div>
-      <div class="key" @click="setKey('KC.NO')">3</div>
-      <div class="key" @click="setKey('KC.NO')">4</div>
-      <div class="key" @click="setKey('KC.NO')">5</div>
-      <div class="key" @click="setKey('KC.NO')">6</div>
-      <div class="key" @click="setKey('KC.NO')">7</div>
-      <div class="key" @click="setKey('KC.NO')">8</div>
-      <div class="key" @click="setKey('KC.NO')">9</div>
-      <div class="key" @click="setKey('KC.NO')">0</div>
-      <div class="key" @click="setKey('KC.NO')">.</div>
-      <div class="key" @click="setKey('KC.NO')">=</div>
-      <div class="key" @click="setKey('KC.NO')">,</div>
-      <div class="key" @click="setKey('KC.NO')">Print Screen</div>
-      <div class="key" @click="setKey('KC.NO')">Scroll Lock</div>
-      <div class="key" @click="setKey('KC.NO')">Pause</div>
-      <div class="key" @click="setKey('KC.NO')">Insert</div>
-      <div class="key" @click="setKey('KC.NO')">Home</div>
-      <div class="key" @click="setKey('KC.NO')">Page Up</div>
-      <div class="key" @click="setKey('KC.NO')">Del</div>
-      <div class="key" @click="setKey('KC.NO')">End</div>
-      <div class="key" @click="setKey('KC.NO')">Page Down</div>
+      <div class="key" @click="setKey('KC.NUMLOCK')">Num Lock</div>
+      <div class="key" @click="setKey('KC.KP_SLASH')">/</div>
+      <div class="key" @click="setKey('KC.KP_ASTERISK')">*</div>
+      <div class="key" @click="setKey('KC.KP_MINUS')">-</div>
+      <div class="key" @click="setKey('KC.KP_PLUS')">+</div>
+      <div class="key" @click="setKey('KC.KP_ENTER')">Num Enter</div>
+      <div class="key" @click="setKey('KC.KP_1')">1</div>
+      <div class="key" @click="setKey('KC.KP_2')">2</div>
+      <div class="key" @click="setKey('KC.KP_3')">3</div>
+      <div class="key" @click="setKey('KC.KP_4')">4</div>
+      <div class="key" @click="setKey('KC.KP_5')">5</div>
+      <div class="key" @click="setKey('KC.KP_6')">6</div>
+      <div class="key" @click="setKey('KC.KP_7')">7</div>
+      <div class="key" @click="setKey('KC.KP_8')">8</div>
+      <div class="key" @click="setKey('KC.KP_9')">9</div>
+      <div class="key" @click="setKey('KC.KP_0')">0</div>
+      <div class="key" @click="setKey('KC.KP_DOT')">.</div>
+      <div class="key" @click="setKey('KC.KP_EQUAL')">=</div>
+      <div class="key" @click="setKey('KC.KP_COMMA')">,</div>
+      <div class="key" @click="setKey('KC.PSCREEN')">Print Screen</div>
+      <div class="key" @click="setKey('KC.SCROLLLOCK')">Scroll Lock</div>
+      <div class="key" @click="setKey('KC.PAUSE')">Pause</div>
+      <div class="key" @click="setKey('KC.INSERT')">Insert</div>
+      <div class="key" @click="setKey('KC.HOME')">Home</div>
+      <div class="key" @click="setKey('KC.PGUP')">Page Up</div>
+      <div class="key" @click="setKey('KC.DEL')">Del</div>
+      <div class="key" @click="setKey('KC.END')">End</div>
+      <div class="key" @click="setKey('KC.PGDOWN')">Page Down</div>
       <div class="key" @click="setKey('KC.RIGHT')">Right</div>
       <div class="key" @click="setKey('KC.LEFT')">Left</div>
       <div class="key" @click="setKey('KC.DOWN')">Down</div>
       <div class="key" @click="setKey('KC.UP')">Up</div>
-      <div class="key" @click="setKey('KC.NO')">~</div>
-      <div class="key" @click="setKey('KC.NO')">!</div>
-      <div class="key" @click="setKey('KC.NO')">@</div>
-      <div class="key" @click="setKey('KC.NO')">#</div>
-      <div class="key" @click="setKey('KC.NO')">$</div>
-      <div class="key" @click="setKey('KC.NO')">%</div>
-      <div class="key" @click="setKey('KC.NO')">^</div>
-      <div class="key" @click="setKey('KC.NO')">&</div>
-      <div class="key" @click="setKey('KC.NO')">*</div>
-      <div class="key" @click="setKey('KC.NO')">(</div>
-      <div class="key" @click="setKey('KC.NO')">)</div>
-      <div class="key" @click="setKey('KC.NO')">_</div>
-      <div class="key" @click="setKey('KC.NO')">+</div>
-      <div class="key" @click="setKey('KC.NO')">{</div>
-      <div class="key" @click="setKey('KC.NO')">}</div>
-      <div class="key" @click="setKey('KC.NO')">&lt;</div>
-      <div class="key" @click="setKey('KC.NO')">&gt;</div>
-      <div class="key" @click="setKey('KC.NO')">:</div>
-      <div class="key" @click="setKey('KC.NO')">|</div>
-      <div class="key" @click="setKey('KC.NO')">?</div>
-      <div class="key" @click="setKey('KC.NO')">"</div>
+      <div class="key" @click="setKey('KC.TILDE')">~</div>
+      <div class="key" @click="setKey('KC.EXLM')">!</div>
+      <div class="key" @click="setKey('KC.AT')">@</div>
+      <div class="key" @click="setKey('KC.HASH')">#</div>
+      <div class="key" @click="setKey('KC.DOLLAR')">$</div>
+      <div class="key" @click="setKey('KC.PERCENT')">%</div>
+      <div class="key" @click="setKey('KC.CIRCUMFLEX')">^</div>
+      <div class="key" @click="setKey('KC.AMPERSAND')">&</div>
+      <div class="key" @click="setKey('KC.ASTERISK')">*</div>
+      <div class="key" @click="setKey('KC.LEFT_PAREN')">(</div>
+      <div class="key" @click="setKey('KC.RIGHT_PAREN')">)</div>
+      <div class="key" @click="setKey('KC.UNDERSCORE')">_</div>
+      <div class="key" @click="setKey('KC.PLUS')">+</div>
+      <div class="key" @click="setKey('KC.LCBR')">{</div>
+      <div class="key" @click="setKey('KC.RCBR')">}</div>
+      <div class="key" @click="setKey('KC.LABK')">&lt;</div>
+      <div class="key" @click="setKey('KC.RABK')">&gt;</div>
+      <div class="key" @click="setKey('KC.COLN')">:</div>
+      <div class="key" @click="setKey('KC.PIPE')">|</div>
+      <div class="key" @click="setKey('KC.QUES')">?</div>
+      <div class="key" @click="setKey('KC.DQT')">"</div>
+    </div>
+  </div>
+  <div class="flex key-chooser" v-if="category === 'layers'">
+    <div class="bonus">
+      <div class="group">
+      <div class="key" @click="setKey(`KC.MO(${index})`)" v-for="(layer,index) in keymap">MO({{index}})</div>
+      </div>
+<!--      <div class="key" @click="setKey('KC.LM()')">LM(l, mod)</div>-->
+<!--      <div class="key" @click="setKey('KC.LT()')">LT(l, kc)</div>-->
+      <div class="group">
+
+      <div class="key" @click="setKey(`KC.TG(${index})`)" v-for="(layer,index) in keymap">TG({{index}})</div>
+      </div>
+      <div class="group">
+
+      <div class="key" @click="setKey(`KC.TO(${index})`)" v-for="(layer,index) in keymap">TO({{index}})</div>
+      </div>
+      <div class="group">
+
+      <div class="key" @click="setKey(`KC.TT(${index})`)" v-for="(layer,index) in keymap">TT({{index}})</div>
+      </div>
+    </div>
+    <div class="bonus">
+      <div class="key" @click="setKey(index)" v-for="(layer,index) in keymap">Layer {{index}}</div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+import {ref} from "vue";
+import {keymap} from "@/store";
+
+const category = ref('basic')
 const emit = defineEmits(['setKey'])
 const setKey = (key) => {
-  emit('setKey', key)
+  emit('setKey', String(key))
 }
 </script>
 
@@ -179,6 +207,9 @@ const setKey = (key) => {
     gap: 4px;
     @apply flex;
     flex-wrap: wrap;
+  }
+  .group{
+    @apply flex gap-1 mr-2;
   }
   .blocker-half {
     width: 25px;
