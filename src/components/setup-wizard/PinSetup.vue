@@ -1,45 +1,68 @@
 <template>
-  <p class="font-bold py-8">Microcontroller Pins</p>
-  <div class="btn btn-sm btn-primary" :class="{'btn-disabled': !pinsCompleted}" @click="$emit('next')">Next</div>
-  <div class="flex gap-4">
+  <p class="font-bold pt-8 text-center text-3xl">Microcontroller Pins</p>
+  <div class="flex items-center justify-center">
+    <p class="p-4 max-w-md text-center">
+      Define the mapping for columns and rows to the microcontroller pins
+    </p>
+  </div>
+  <div
+    class="btn btn-sm btn-primary"
+    :class="{ 'btn-disabled': !pinsCompleted }"
+    @click="$emit('next')"
+    v-if="$route.name !== pins"
+  >
+    Next
+  </div>
+  <div class="flex gap-4 mt-5 justify-center">
     <div class="flex-grow-0">
-      <p class="p-4">write each pin as board.GP01 as it is mapped like this in kmk</p>
       <div
-        class="rounded bg-base-300 p-2 grid grid-cols-1 gap-2 mb-4 p-4"
+        class="rounded bg-base-300 p-2 grid grid-cols-1 gap-2 mb-4 py-8"
+        style="width: 350px"
       >
-        <p>Row Pins <span class="ml-2 badge badge-primary font-bold">{{ selectedkeyboard.layoutContents.pins.rows.length }}</span></p>
+        <p class="pb-4 font-bold text-xl flex items-center justify-center">
+          Row Pins
+          <span class="ml-2 badge badge-primary font-bold">{{
+            selectedkeyboard.layoutContents.pins.rows.length
+          }}</span>
+        </p>
         <div
           v-for="(pin, index) in selectedkeyboard.layoutContents.matrix.rows"
+          class="grid grid-cols-6 items-center gap-2"
         >
-          <span class="mr-2 badge">{{ index + 1 }}</span>
+          <p class="mr-2 text-right">{{ index + 1 }}</p>
           <input
-            class="input input-sm input-bordered"
+            class="input input-sm input-bordered col-span-4"
             type="text"
             v-model="selectedkeyboard.layoutContents.pins.rows[index]"
-            placeholder="board.GP17"
+            placeholder="GP17"
           />
         </div>
       </div>
-      <div
-        class="rounded bg-base-300 p-2 grid grid-cols-1 gap-2 mb-4 p-4"
-      >
-      <p>
-        Column Pins <span class="ml-2 badge badge-primary font-bold">{{ selectedkeyboard.layoutContents.pins.cols.length }}</span>
-      </p>
+      <div class="rounded bg-base-300 p-2 grid grid-cols-1 gap-2 mb-4 py-8">
+        <p class="pb-4 font-bold text-xl flex items-center justify-center">
+          Column Pins
+          <span class="ml-2 badge badge-primary font-bold">{{
+            selectedkeyboard.layoutContents.pins.cols.length
+          }}</span>
+        </p>
         <div
           v-for="(pin, index) in selectedkeyboard.layoutContents.pins.cols"
+          class="grid grid-cols-6 items-center gap-2"
         >
-          <span class="mr-2">{{ index + 1 }}</span>
+          <span class="mr-2 text-right">{{ index + 1 }}</span>
           <input
-            class="input input-sm input-bordered"
+            class="input input-sm input-bordered col-span-4"
             type="text"
             v-model="selectedkeyboard.layoutContents.pins.cols[index]"
-            placeholder="board.GP17"
+            placeholder="GP17"
           />
         </div>
       </div>
     </div>
-    <div class="w-1/2 flex flex-col items-center">
+    <div
+      class="w-1/2 flex flex-col items-center text-center"
+      style="width: 400px"
+    >
       <select
         v-model="selectedkeyboard.layoutContents.controller"
         class="select select-bordered"
@@ -56,30 +79,37 @@
             href="https://keeb.supply/products/0xcb-helios"
             >0xCB Helios</a
           >
-          is a rp2040 chip<br />
-          with Pro Micro compatible footprint
+          is an Elite-C compatible MicroController that is based on the RP2040.
         </p>
-          <img
-            src="@/assets/0xcb-helios.png"
-            alt=""
-            width="400" height="300"
-          />
+        <img src="@/assets/0xcb-helios.png" alt="" width="400" height="300" />
       </div>
       <div v-if="selectedkeyboard.layoutContents.controller === 'other'">
         <ul class="p-4">
-          <li><a class="link link-primary" target="_blank" href="https://datasheets.raspberrypi.com/pico/Pico-R3-A4-Pinout.pdf">Pi Pico</a></li>
+          <li>
+            <a
+              class="link link-primary"
+              target="_blank"
+              href="https://datasheets.raspberrypi.com/pico/Pico-R3-A4-Pinout.pdf"
+              >Pi Pico</a
+            >
+          </li>
         </ul>
-        <p class="p-4">feel free to submit other microcontroller pinouts just make sure you have the permission to use the pinout image if it has not been created by you, in the mean time here are links to other pinouts
+        <p class="p-4">
+          feel free to submit other microcontroller pinouts just make sure you
+          have the permission to use the pinout image if it has not been created
+          by you, in the mean time here are links to other pinouts
         </p>
         <p>currently this tool works with any RP2040 controller.</p>
-        <p class="p-4">just look for a pinout and use any pin that is starting with GP</p>
+        <p class="p-4">
+          just look for a pinout and use any pin that is starting with GP
+        </p>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import {computed, ref} from "vue";
+import { computed, ref } from "vue";
 import { selectedkeyboard } from "@/store";
 if (!selectedkeyboard.value.layoutContents.pins) {
   selectedkeyboard.value.layoutContents.pins = {
@@ -96,10 +126,12 @@ selectedkeyboard.value.layoutContents.pins.rows.length =
   selectedkeyboard.value.layoutContents.matrix.rows;
 
 const pinsCompleted = computed(() => {
-  if(selectedkeyboard.value.layoutContents.pins.cols.includes('')) return false
-  if(selectedkeyboard.value.layoutContents.pins.rows.includes('')) return false
-  return true
-})
+  if (selectedkeyboard.value.layoutContents.pins.cols.includes(""))
+    return false;
+  if (selectedkeyboard.value.layoutContents.pins.rows.includes(""))
+    return false;
+  return true;
+});
 </script>
 
 <style lang="scss" scoped>

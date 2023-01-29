@@ -150,6 +150,11 @@ if __name__ == '__main__':
   fs.writeFile(keyboardPath+'/code.py', keymapString, () => {
     console.log("File written successfully\n");
   })
+
+  // write pog.json
+  fs.writeFile(keyboardPath+'/pog.json', JSON.stringify(data,null,4), () => {
+    console.log("pog File written successfully\n");
+  })
 }
 
 const updateLocalKMKcopy = () => {
@@ -174,8 +179,9 @@ function createWindow() {
     return { action: 'deny' };
   });
 
-  // win.loadFile("dist/index.html");
-  win.loadURL("http://127.0.0.1:5173/Users/janlunge/Code/pog/dist");
+  //win.loadFile("dist/index.html");
+  // win.loadURL("http://127.0.0.1:9888/Users/janlunge/Code/pog/dist");
+  win.loadURL("http://127.0.0.1:9888/");
 }
 const scanForKeyboards = () => {
 

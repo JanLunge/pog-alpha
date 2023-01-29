@@ -52,13 +52,12 @@ const wizardStep = ref(0);
         </button>
       </div>
     </div>
-    <div class="min-h-full" v-else-if="wizardStep === 1">
-      <new-keyboard-setup
-        :selected-keyboard="selectedkeyboard"
-        @back="wizardStep--"
-        @next="wizardStep++;$router.push('/keymap')"
-      ></new-keyboard-setup>
-    </div>
+    <new-keyboard-setup
+      :selected-keyboard="selectedkeyboard"
+      @back="wizardStep--"
+      @next="wizardStep++;$router.push('/keymap')"
+      v-else-if="wizardStep === 1"
+    ></new-keyboard-setup>
     <div v-else-if="wizardStep === 2">
       <keyboard-config
         :code-contents="selectedkeyboard.codeContents"
