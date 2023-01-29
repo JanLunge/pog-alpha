@@ -9,12 +9,11 @@ import router from "@/router";
 const openFolderModal = async () => {
   selectedkeyboard.value = await (window as any).electronAPI.openFile();
   if (selectedkeyboard.value.path) {
-    if(selectedkeyboard.value.hasLayout){
-
+    if (selectedkeyboard.value.hasLayout) {
       wizardStep.value = 2;
-      router.push('/keymap')
-    }else{
-    wizardStep.value = 1;
+      router.push("/keymap");
+    } else {
+      wizardStep.value = 1;
     }
   }
   console.log(selectedkeyboard);
@@ -33,17 +32,17 @@ const wizardStep = ref(0);
       <p class="pt-6">Effortlessly customize your keyboard with Pog</p>
       <div class="divider"></div>
 
-<!--      <div class="p-8">-->
-<!--        <p class="pb-4 text-xl">Your Keyboards</p>-->
-<!--        <div class="flex items-center justify-center">-->
-<!--          <div-->
-<!--            class="w-48 h-24 border rounded border-gray-500 flex items-center justify-center"-->
-<!--          >-->
-<!--            0xcb New Horizons-->
-<!--          </div>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--      <div class="divider">OR</div>-->
+      <!--      <div class="p-8">-->
+      <!--        <p class="pb-4 text-xl">Your Keyboards</p>-->
+      <!--        <div class="flex items-center justify-center">-->
+      <!--          <div-->
+      <!--            class="w-48 h-24 border rounded border-gray-500 flex items-center justify-center"-->
+      <!--          >-->
+      <!--            0xcb New Horizons-->
+      <!--          </div>-->
+      <!--        </div>-->
+      <!--      </div>-->
+      <!--      <div class="divider">OR</div>-->
 
       <div class="m-4 flex-grow justify-center flex flex-col">
         <p class="pb-4">select a keyboard drive to continue</p>
@@ -55,7 +54,10 @@ const wizardStep = ref(0);
     <new-keyboard-setup
       :selected-keyboard="selectedkeyboard"
       @back="wizardStep--"
-      @next="wizardStep++;$router.push('/keymap')"
+      @next="
+        wizardStep++;
+        $router.push('/keymap');
+      "
       v-else-if="wizardStep === 1"
     ></new-keyboard-setup>
     <div v-else-if="wizardStep === 2">
@@ -66,8 +68,4 @@ const wizardStep = ref(0);
     </div>
   </main>
 </template>
-<style>
-.keyboard-check {
-  @apply grid grid-cols-2 gap-2 items-center mb-4;
-}
-</style>
+<style></style>

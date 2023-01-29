@@ -1,10 +1,12 @@
 <template>
   <div class="flex">
-    <ul class="menu bg-base-100 w-56 flex-shrink-0 pt-8 border-r border-opacity-40 border-white">
-      <p class="p-4 text-xl font-bold text-center">pog</p>
+    <ul
+      class="menu bg-base-100 w-56 flex-shrink-0 pt-8 border-r border-opacity-40 border-white"
+    >
+      <li class="p-4 text-xl font-bold text-center">pog</li>
       <li><router-link to="/keymap">Keymap</router-link></li>
       <li><router-link to="/layout-options">Layout Options</router-link></li>
-      <hr class="border-white border-opacity-40">
+      <hr class="border-white border-opacity-40" />
       <li><router-link to="/firmware">Firmware</router-link></li>
       <li><router-link to="/matrix">Matrix</router-link></li>
       <li><router-link to="/pins">Pins</router-link></li>
@@ -12,26 +14,31 @@
       <li><router-link to="/raw-keymap">Raw Keymap</router-link></li>
       <li><router-link to="/encoder">Encoder</router-link></li>
     </ul>
-  <div class="px-4 pt-8 flex-1 overflow-x-auto h-screen">
-    <h1 class="text-5xl font-bold text-center mb-8">Keyboard Config</h1>
-    <router-view></router-view>
+    <div class="px-4 pt-8 flex-1 overflow-x-auto h-screen">
+      <h1 class="text-5xl font-bold text-center mb-8">Keyboard Config</h1>
+      <router-view></router-view>
 
-    <div class="py-4 flex justify-center">
-      <div class="btn btn-sm btn-primary" @click="saveKeymap">
-        Save python code to Keyboard
+      <div class="py-4 flex justify-center">
+        <div class="btn btn-sm btn-primary" @click="saveKeymap">
+          Save python code to Keyboard
+        </div>
       </div>
     </div>
-  </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { computed, onMounted, ref, watch } from "vue";
 import InputLabel from "@/components/ui/InputLabel.vue";
-import filbert from 'filbert'
+import filbert from "filbert";
 import sliceLines from "slice-lines";
 import KeyboardLayout from "@/components/KeyboardLayout.vue";
-import {selectedKey, selectedkeyboard, selectedLayer, selectedVariants} from "@/store";
+import {
+  selectedKey,
+  selectedkeyboard,
+  selectedLayer,
+  selectedVariants,
+} from "@/store";
 import { matrixPositionToIndex } from "@/helpers/matrix";
 import VariantSwitcher from "@/components/VariantSwitcher.vue";
 const props = defineProps(["codeContents", "layoutContents"]);
@@ -78,8 +85,7 @@ const keyboardWidth = computed({
     updateKeymapLength();
   },
 });
-import {keymap, keyLayout} from "@/store";
-
+import { keymap, keyLayout } from "@/store";
 
 const codepyTmp = ref("");
 
@@ -126,10 +132,10 @@ const saveKeymap = async () => {
     colPins: colPins.value,
     keymap: keymap.value,
     diodeDirection: selectedkeyboard.value.layoutContents.matrix.diodeDirection,
-    config: selectedkeyboard.value
+    config: selectedkeyboard.value,
   };
   // save to pog.json
-  selectedkeyboard.value.layoutContents.currentKeymap = keymap.value
+  selectedkeyboard.value.layoutContents.currentKeymap = keymap.value;
   const saveResponse = await (window as any).electronAPI.saveKeymap(
     JSON.stringify(data)
   );
@@ -147,7 +153,7 @@ const extractData = ({
   propertyName: string;
   marker: string;
 }): { markedPythonDoc: string; data: any } | { error: boolean } => {
-  const cleanedPythonDoc = pythonDoc.replaceAll(',)',')')
+  const cleanedPythonDoc = pythonDoc.replaceAll(",)", ")");
   const codeast = filbert.parse(cleanedPythonDoc, {
     range: true,
     locations: true,
@@ -188,7 +194,7 @@ const extractData = ({
   });
   return result;
 };
-import {layoutVariants} from "@/store";
+import { layoutVariants } from "@/store";
 import KeyPicker from "@/components/setup-wizard/KeyPicker.vue";
 onMounted(() => {
   // go through the code.py file for each datapoint to look up
@@ -221,17 +227,18 @@ onMounted(() => {
       console.log("keymap layer?", a);
       return a.arguments.map((b) => {
         if (b.type === "CallExpression") {
-          let props = b.arguments.map(
-            (p) => {
-              // if raw value
-              if(p.type === 'Literal'){
-                return String(p.value)
-              }
-            return `${p.object.name}.${p.property.name}`}
-          );
-          if(b.callee.type === "MemberExpression"){
-            return `${b.callee.object.name}.${b.callee.property.name}(${props.join(",")})`;
-          }else {
+          let props = b.arguments.map((p) => {
+            // if raw value
+            if (p.type === "Literal") {
+              return String(p.value);
+            }
+            return `${p.object.name}.${p.property.name}`;
+          });
+          if (b.callee.type === "MemberExpression") {
+            return `${b.callee.object.name}.${
+              b.callee.property.name
+            }(${props.join(",")})`;
+          } else {
             return `${b.callee.name}(${props.join(",")})`;
           }
         }
@@ -287,7 +294,7 @@ onMounted(() => {
   codepyTmp.value = extractData3.markedPythonDoc;
 
   // parse Layout file
-  if(!props.layoutContents) return
+  if (!props.layoutContents) return;
   const layout = props.layoutContents;
   let keyboardInfo = ref({ info: {}, keys: [] });
 
@@ -296,8 +303,10 @@ onMounted(() => {
   let currentY = 0;
   let keydata = undefined; // data to carry over to the next key until it is overwritten
   let firstKeyInRow = true;
-  layoutVariants.value = layout.layouts.labels
-  selectedVariants.value = layoutVariants.value.map(a=> {return 0})
+  layoutVariants.value = layout.layouts.labels;
+  selectedVariants.value = layoutVariants.value.map((a) => {
+    return 0;
+  });
   layout.layouts.keymap.forEach((row) => {
     if (Array.isArray(row)) {
       // normal row
@@ -309,16 +318,15 @@ onMounted(() => {
           if (labels.length === 1) {
             // just the main label
             labels = ["", "", "", "", "", "", "", "", "", keyOrData];
-            key.matrixPos = keyOrData
-          }
-          else if (labels.length === 4) {
+            key.matrixPos = keyOrData;
+          } else if (labels.length === 4) {
             // shortened labels top left and bottom right
             // labels = [keyOrData];
-            key.matrixPos = labels[0]
-            key.variant = labels[3].split(',').map(a=>Number(a))
-          }else{
+            key.matrixPos = labels[0];
+            key.variant = labels[3].split(",").map((a) => Number(a));
+          } else {
             // all labels just keep split
-            key.matrixPos = keyOrData[0]
+            key.matrixPos = keyOrData[0];
             // key.variant = keyOrData[3]
           }
           key.labels = labels;
@@ -327,20 +335,20 @@ onMounted(() => {
             key = { ...key, ...keydata };
             if (keydata.y) currentY = keydata.y;
             if (keydata.x) currentX = keydata.x + currentX;
-            if(firstKeyInRow){
+            if (firstKeyInRow) {
               key.x = currentX;
               firstKeyInRow = false;
-            }else {
+            } else {
               key.x = currentX;
             }
           }
           if (!key.y) key.y = currentY;
           if (!key.x) key.x = currentX;
           keydata = undefined;
-          if(!key.w || key.w === 1) {
+          if (!key.w || key.w === 1) {
             currentX++;
-          }else{
-            currentX = currentX + key.w
+          } else {
+            currentX = currentX + key.w;
           }
           keyboardInfo.value.keys.push(key);
         } else {
@@ -351,7 +359,7 @@ onMounted(() => {
       });
       // add 1 to top distance // next row
       currentX = 0;
-      firstKeyInRow = true
+      firstKeyInRow = true;
       currentY++;
     } else {
       keyboardInfo.value.info = layout[0];
@@ -360,12 +368,10 @@ onMounted(() => {
   keyLayout.value = keyboardInfo.value;
   keyLayout.value.info.matrix = [rowPins.value.length, colPins.value.length];
 });
-
-
 </script>
 
 <style lang="scss" scoped>
-.router-link-active{
+.router-link-active {
   @apply bg-primary text-black;
 }
 </style>
