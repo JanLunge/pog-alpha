@@ -1,5 +1,7 @@
 # pog keyboard flashing utility
 
+![preview](src/assets/pog-thumbnail.png?raw=true)
+
 ## dependencies
 * node 16
 * yarn
