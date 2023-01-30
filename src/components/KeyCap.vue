@@ -96,9 +96,9 @@ const keyGap = 4;
 import { selectedLayer, selectedVariants } from "@/store";
 // hide normal labels and show the keymap thing
 const action = computed(() => {
-  let position = props.keyData.matrixPos; // 0,0 // row, col
+  let position = props.keyData.matrix; // [0,0] // row, col
   if (!position) return "";
-  let indexes = position.split(",");
+  let indexes = position;
   if (!props.keyLayout) return "error";
   if (!props.keyLayout.matrix) return "err matrix";
   let matrixWidth = props.keyLayout.matrix[1];
@@ -116,9 +116,9 @@ const visible = computed(() => {
   }
   let variant = props.keyData.variant;
   if (variant) {
-    if (variant[0] === 3) {
-      console.log(variant[0], selectedVariants.value[variant[0]].value);
-    }
+    // if (variant[0] === 3) {
+    //   console.log(variant[0], selectedVariants.value[variant[0]].value);
+    // }
     return selectedVariants.value[variant[0]] == variant[1];
     // return variant[1] === 0
   }
@@ -214,19 +214,19 @@ const argsSelected = ref(false);
 const bgClick = () => {
   mainSelected.value = true;
   argsSelected.value = false;
-  emit("selected", { key: props.keyData.matrixPos, args: argsSelected.value });
+  emit("selected", { key: props.keyData.matrix, args: argsSelected.value });
 };
 const argClick = () => {
   argsSelected.value = true;
   mainSelected.value = false;
-  emit("selected", { key: props.keyData.matrixPos, args: argsSelected.value });
+  emit("selected", { key: props.keyData.matrix, args: argsSelected.value });
 };
 
 import { selectedKey } from "@/store";
 watch(
   () => selectedKey.value.key,
   (newValue) => {
-    if (selectedKey.value.key !== props.keyData.matrixPos) {
+    if (selectedKey.value.key !== props.keyData.matrix) {
       mainSelected.value = false;
       argsSelected.value = false;
     }
@@ -236,7 +236,7 @@ watch(
 
 <style lang="scss" scoped>
 .keyborder {
-  // outer cey outline and background
+  // outer key outline and background
   background: #333;
   position: absolute;
   width: 54px;

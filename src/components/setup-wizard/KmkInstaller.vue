@@ -4,7 +4,7 @@
       KMK is a capable firmware for keyboards using the rp2040. You can let
       kmk automatically install here or do the procedure manually
     </p>
-    <div class="keyboard-check m-4 flex flex-col justify-center" v-if="selectedkeyboard.hasKmk">
+    <div class="keyboard-check m-4 flex flex-col justify-center" v-if="selectedKeyboard.hasKmk">
       <span class="text-right">KMK</span>
       <span class="badge badge-success">installed</span>
       <button class="btn btn-sm btn-primary block mt-4" @click="$emit('next')">
@@ -27,7 +27,7 @@
 </template>
 <script setup lang="ts">
 import {ref} from "vue";
-import {selectedkeyboard} from "@/store";
+import {selectedKeyboard} from "@/store";
 
 const progress = ref(0);
 const kmkInstallState = ref("");
@@ -44,7 +44,7 @@ const updateKMK = async () => {
     kmkInstallState.value = value.state;
     progress.value = value.progress;
     if(value.state ==='done') {
-      selectedkeyboard.value.hasKmk = true
+      selectedKeyboard.value.hasKmk = true
     }
   }
 })

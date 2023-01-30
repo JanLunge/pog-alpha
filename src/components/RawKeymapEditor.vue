@@ -6,7 +6,7 @@
       <div
           class="border rounded border-opacity-40 border-white p-2 grid gap-2 mb-4"
           :style="{
-            gridTemplateColumns: `repeat(${selectedkeyboard.layoutContents.matrix.cols}, minmax(0, 1fr))`,
+            gridTemplateColumns: `repeat(${selectedKeyboard.configContents.matrix.cols}, minmax(0, 1fr))`,
           }"
       >
         <input
@@ -22,7 +22,7 @@
 
 <script lang="ts" setup>
 
-import {keymap, selectedkeyboard} from "@/store";
+import {keymap, selectedKeyboard} from "@/store";
 </script>
 
 <style lang="scss" scoped>

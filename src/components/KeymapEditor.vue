@@ -2,28 +2,29 @@
   <div class="flex items-center">
     Layers
     <div class="tabs tabs-boxed ml-2 gap-4">
-      <div class="tab" :class="{'tab-active': index === selectedLayer}" v-for="(layer,index) in keymap" @click="selectedLayer=index">{{index}}</div>
+      <div
+        class="tab"
+        :class="{ 'tab-active': index === selectedLayer }"
+        v-for="(layer, index) in keymap"
+        @click="selectedLayer = index"
+      >
+        {{ index }}
+      </div>
       <div class="tab tab-border" @click="addLayer">add Layer</div>
       <div class="tab tab-border" @click="removeLayer">remove last Layer</div>
     </div>
-
   </div>
-  <keyboard-layout
-      :key-layout="keyLayout"
-      :keymap="keymap"
-  ></keyboard-layout>
+  <keyboard-layout :key-layout="keyLayout" :keymap="keymap"></keyboard-layout>
   <KeyPicker @setKey="setKey"></KeyPicker>
-
 </template>
 
 <script lang="ts" setup>
-import {keyLayout, keymap, selectedKey, selectedLayer} from "@/store";
+import {keyLayout, keymap, selectedKey, selectedKeyboard, selectedLayer} from "@/store";
 import KeyboardLayout from "@/components/KeyboardLayout.vue";
 import KeyPicker from "@/components/setup-wizard/KeyPicker.vue";
-import {matrixPositionToIndex} from "@/helpers/matrix";
+import { matrixPositionToIndex } from "@/helpers/helpers";
 
-
-const setKey = (keyCode:string) => {
+const setKey = (keyCode: string) => {
   const keyIndex = matrixPositionToIndex({
     pos: selectedKey.value.key,
     matrixSize: keyLayout.value.info.matrix,
@@ -32,28 +33,36 @@ const setKey = (keyCode:string) => {
   const currentKeyAction = keymap.value[selectedLayer.value][keyIndex];
   if (!keyCode.includes("(")) {
     // could set this as arg in a key
-    if (currentKeyAction.includes("(") && selectedKey.value.args) {
-    // Validate for what args this function takes
+    if (currentKeyAction && currentKeyAction.includes("(") && selectedKey.value.args) {
+      // Validate for what args this function takes
       // only set this as arg
       // TODO: handle multiple args
       let action = currentKeyAction.split("(")[0].replace(")", "");
       keymap.value[selectedLayer.value][keyIndex] =
-          action + "(" + keyCode + ")";
+        action + "(" + keyCode + ")";
       return;
     }
   }
   keymap.value[selectedLayer.value][keyIndex] = keyCode;
 };
 const addLayer = () => {
-  const tmpKeymap = [...keymap.value[0]]
-  tmpKeymap.fill('KC.TRNS')
-  keymap.value.push(tmpKeymap)
-}
+  const tmpKeymap = [...keymap.value[0]];
+  tmpKeymap.fill("KC.TRNS");
+  keymap.value.push(tmpKeymap);
+  // if needed also add an encoder layer
+  const encoderCount = selectedKeyboard.value.configContents.encoders.length
+  if( encoderCount !== 0){
+    selectedKeyboard.value.configContents.encoderKeymap.push(Array(encoderCount).fill(['KC.TRNS', 'KC.TRNS']))
+  }
+};
 const removeLayer = () => {
-  keymap.value.pop()
-}
+  keymap.value.pop();
+  // if needed also add an encoder layer
+  const encoderCount = selectedKeyboard.value.configContents.encoders.length
+  if( encoderCount !== 0){
+    selectedKeyboard.value.configContents.encoderKeymap.pop()
+  }
+};
 </script>
 
-<style lang="scss" scoped>
-
-</style>
+<style lang="scss" scoped></style>

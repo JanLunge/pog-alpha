@@ -3,20 +3,20 @@ import { ref } from "vue";
 import KeyboardConfig from "@/components/setup-wizard/KeyboardConfig.vue";
 import NewKeyboardSetup from "@/views/newKeyboardSetup.vue";
 
-import { selectedkeyboard } from "@/store";
+import { selectedKeyboard } from "@/store";
 import router from "@/router";
 
 const openFolderModal = async () => {
-  selectedkeyboard.value = await (window as any).electronAPI.openFile();
-  if (selectedkeyboard.value.path) {
-    if (selectedkeyboard.value.hasLayout) {
+  selectedKeyboard.value = await (window as any).electronAPI.openFile();
+  if (selectedKeyboard.value.path) {
+    if (selectedKeyboard.value.hasConfig) {
       wizardStep.value = 2;
       router.push("/keymap");
     } else {
       wizardStep.value = 1;
     }
   }
-  console.log(selectedkeyboard);
+  console.log(selectedKeyboard);
 };
 
 const wizardStep = ref(0);
@@ -52,7 +52,7 @@ const wizardStep = ref(0);
       </div>
     </div>
     <new-keyboard-setup
-      :selected-keyboard="selectedkeyboard"
+      :selected-keyboard="selectedKeyboard"
       @back="wizardStep--"
       @next="
         wizardStep++;
@@ -62,8 +62,8 @@ const wizardStep = ref(0);
     ></new-keyboard-setup>
     <div v-else-if="wizardStep === 2">
       <keyboard-config
-        :code-contents="selectedkeyboard.codeContents"
-        :layoutContents="selectedkeyboard.layoutContents"
+        :code-contents="selectedKeyboard.codeContents"
+        :config-contents="selectedKeyboard.configContents"
       ></keyboard-config>
     </div>
   </main>

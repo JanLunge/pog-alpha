@@ -7,7 +7,7 @@
   <label>Diode Direction</label>
   <select
     class="select select-bordered ml-2"
-    v-model="selectedkeyboard.layoutContents.matrix.diodeDirection"
+    v-model="selectedKeyboard.configContents.matrix.diodeDirection"
   >
     <option value="COL2ROW">COL2ROW</option>
     <option value="ROW2COL">ROW2COL</option>
@@ -17,13 +17,13 @@
       placeholder="1"
       input-type="number"
       label="Matrix Width"
-      v-model="selectedkeyboard.layoutContents.matrix.cols"
+      v-model="selectedKeyboard.configContents.matrix.cols"
     ></InputLabel>
     <InputLabel
       placeholder="1"
       input-type="number"
       label="Matrix Height"
-      v-model="selectedkeyboard.layoutContents.matrix.rows"
+      v-model="selectedKeyboard.configContents.matrix.rows"
     ></InputLabel>
   </div>
   <div
@@ -34,10 +34,10 @@
     Next
   </div>
   <div class="grid-visualizer">
-    <div class="row" v-for="row in selectedkeyboard.layoutContents.matrix.rows">
+    <div class="row" v-for="row in selectedKeyboard.configContents.matrix.rows">
       <div
         class="col"
-        v-for="col in selectedkeyboard.layoutContents.matrix.cols"
+        v-for="col in selectedKeyboard.configContents.matrix.cols"
       ></div>
     </div>
   </div>
@@ -45,27 +45,27 @@
 
 <script lang="ts" setup>
 import InputLabel from "@/components/ui/InputLabel.vue";
-import { selectedkeyboard } from "@/store";
+import { selectedKeyboard } from "@/store";
 import { computed } from "vue";
 
-if (!selectedkeyboard.value.layoutContents) {
-  selectedkeyboard.value.layoutContents = {
+if (!selectedKeyboard.value.configContents) {
+  selectedKeyboard.value.configContents = {
     matrix: {
       rows: 0,
       cols: 0,
     },
   };
-} else if (!selectedkeyboard.value.layoutContents.matrix) {
-  selectedkeyboard.value.layoutContents.matrix = {
+} else if (!selectedKeyboard.value.configContents.matrix) {
+  selectedKeyboard.value.configContents.matrix = {
     rows: 0,
     cols: 0,
   };
 }
 const matrixEmpty = computed(() => {
   return !(
-    selectedkeyboard.value.layoutContents.matrix.cols !== 0 &&
-    selectedkeyboard.value.layoutContents.matrix.rows &&
-    selectedkeyboard.value.layoutContents.matrix.diodeDirection !== undefined
+    selectedKeyboard.value.configContents.matrix.cols !== 0 &&
+    selectedKeyboard.value.configContents.matrix.rows &&
+    selectedKeyboard.value.configContents.matrix.diodeDirection !== undefined
   );
 });
 </script>

@@ -13,11 +13,11 @@
       <li><router-link to="/layout">Layout</router-link></li>
       <li><router-link to="/raw-keymap">Raw Keymap</router-link></li>
       <li><router-link to="/encoder">Encoder</router-link></li>
+      <li><router-link to="/tools">Tools</router-link></li>
     </ul>
     <div class="px-4 pt-8 flex-1 overflow-x-auto h-screen">
       <h1 class="text-5xl font-bold text-center mb-8">Keyboard Config</h1>
       <router-view></router-view>
-
       <div class="py-4 flex justify-center">
         <div class="btn btn-sm btn-primary" @click="saveKeymap">
           Save python code to Keyboard
@@ -29,19 +29,10 @@
 
 <script lang="ts" setup>
 import { computed, onMounted, ref, watch } from "vue";
-import InputLabel from "@/components/ui/InputLabel.vue";
 import filbert from "filbert";
 import sliceLines from "slice-lines";
-import KeyboardLayout from "@/components/KeyboardLayout.vue";
-import {
-  selectedKey,
-  selectedkeyboard,
-  selectedLayer,
-  selectedVariants,
-} from "@/store";
-import { matrixPositionToIndex } from "@/helpers/matrix";
-import VariantSwitcher from "@/components/VariantSwitcher.vue";
-const props = defineProps(["codeContents", "layoutContents"]);
+import { selectedKeyboard, selectedVariants, layoutVariants } from "@/store";
+const props = defineProps(["codeContents", "configContents"]);
 
 const rowPins = ref<string[]>([""]);
 const keyboardHeight = computed({
@@ -86,27 +77,11 @@ const keyboardWidth = computed({
   },
 });
 import { keymap, keyLayout } from "@/store";
+import {cleanupKeymap, KleToPog} from "@/helpers/helpers";
 
 const codepyTmp = ref("");
 
-// watch(
-//   () => keyboardHeight.value,
-//   () => {
-//     rowPins.value = Array(keyboardHeight.value).fill("");
-//     updateKeymapLength();
-//   }
-// );
-//
-// watch(
-//   () => keyboardWidth.value,
-//   () => {
-//     colPins.value = Array(keyboardWidth.value).fill("");
-//     updateKeymapLength();
-//   }
-// );
-
 const updateKeymapLength = () => {
-  // keymap.value = [Array(rowPins.value.length * colPins.value.length).fill("")];
   // check each layer
   keymap.value.forEach((layer, index) => {
     // count keys
@@ -126,22 +101,25 @@ const updateKeymapLength = () => {
   });
 };
 
+// pass pog.json to backend to convert it ? or convert it here
 const saveKeymap = async () => {
   const data = {
     rowPins: rowPins.value,
     colPins: colPins.value,
     keymap: keymap.value,
-    diodeDirection: selectedkeyboard.value.layoutContents.matrix.diodeDirection,
-    config: selectedkeyboard.value,
+    diodeDirection: selectedKeyboard.value.configContents.matrix.diodeDirection,
+    config: selectedKeyboard.value,
   };
+  if (!selectedKeyboard.value || !selectedKeyboard.value.configContents) return;
   // save to pog.json
-  selectedkeyboard.value.layoutContents.currentKeymap = keymap.value;
+  selectedKeyboard.value.configContents.currentKeymap = keymap.value;
   const saveResponse = await (window as any).electronAPI.saveKeymap(
     JSON.stringify(data)
   );
   // const saveResponse = await (window as any).electronAPI.saveKeymap(data);
 };
 
+// extract data from the code.py to create a pog.json from existing keyboards?
 const extractData = ({
   pythonDoc,
   objectName,
@@ -194,18 +172,31 @@ const extractData = ({
   });
   return result;
 };
-import { layoutVariants } from "@/store";
-import KeyPicker from "@/components/setup-wizard/KeyPicker.vue";
-onMounted(() => {
-  // go through the code.py file for each datapoint to look up
-  // pass the marked code file to the next
 
-  // if(expression.left.property.name === 'col_pins'){
-  //   console.log('found the col_pins', expression)
-  // }
-  // if(expression.left.property.name === 'row_pins'){
-  //   console.log('found the row_pins', expression)
-  // }
+onMounted(() => {
+  // only read from the pog.json by default
+
+  // legacy: set matrix size
+  rowPins.value = selectedKeyboard.value.configContents.pins.rows;
+  colPins.value = selectedKeyboard.value.configContents.pins.cols;
+  if (!keyLayout.value.info) keyLayout.value.info = {};
+  keyLayout.value.info.matrix = [rowPins.value.length, colPins.value.length];
+
+  // TODO: Maybe fallback or alert when using non pog format
+  // const pogLayout = KleToPog(
+  //   JSON.stringify(props.configContents.layouts.keymap)
+  // );
+  // if (!pogLayout) return;
+
+  layoutVariants.value = props.configContents.layouts.labels;
+  selectedVariants.value = layoutVariants.value.map((a) => {
+    return 0;
+  });
+  keyLayout.value.keys = props.configContents.layouts.keymap;
+  keymap.value = props.configContents.currentKeymap
+  cleanupKeymap()
+
+  return;
 
   // extract keymap
   const extractData1 = extractData({
@@ -292,81 +283,6 @@ onMounted(() => {
     console.log("more than one row pin", colPins.value);
   }
   codepyTmp.value = extractData3.markedPythonDoc;
-
-  // parse Layout file
-  if (!props.layoutContents) return;
-  const layout = props.layoutContents;
-  let keyboardInfo = ref({ info: {}, keys: [] });
-
-  //iterate over rows
-  let currentX = 0;
-  let currentY = 0;
-  let keydata = undefined; // data to carry over to the next key until it is overwritten
-  let firstKeyInRow = true;
-  layoutVariants.value = layout.layouts.labels;
-  selectedVariants.value = layoutVariants.value.map((a) => {
-    return 0;
-  });
-  layout.layouts.keymap.forEach((row) => {
-    if (Array.isArray(row)) {
-      // normal row
-      row.forEach((keyOrData) => {
-        let key = { labels: [] };
-        if (typeof keyOrData === "string") {
-          // this is a key
-          let labels = keyOrData.split("\n");
-          if (labels.length === 1) {
-            // just the main label
-            labels = ["", "", "", "", "", "", "", "", "", keyOrData];
-            key.matrixPos = keyOrData;
-          } else if (labels.length === 4) {
-            // shortened labels top left and bottom right
-            // labels = [keyOrData];
-            key.matrixPos = labels[0];
-            key.variant = labels[3].split(",").map((a) => Number(a));
-          } else {
-            // all labels just keep split
-            key.matrixPos = keyOrData[0];
-            // key.variant = keyOrData[3]
-          }
-          key.labels = labels;
-          // Position data
-          if (keydata) {
-            key = { ...key, ...keydata };
-            if (keydata.y) currentY = keydata.y;
-            if (keydata.x) currentX = keydata.x + currentX;
-            if (firstKeyInRow) {
-              key.x = currentX;
-              firstKeyInRow = false;
-            } else {
-              key.x = currentX;
-            }
-          }
-          if (!key.y) key.y = currentY;
-          if (!key.x) key.x = currentX;
-          keydata = undefined;
-          if (!key.w || key.w === 1) {
-            currentX++;
-          } else {
-            currentX = currentX + key.w;
-          }
-          keyboardInfo.value.keys.push(key);
-        } else {
-          // this is data for the next key
-          keydata = keyOrData;
-        }
-        // add 1 to left distance // next key
-      });
-      // add 1 to top distance // next row
-      currentX = 0;
-      firstKeyInRow = true;
-      currentY++;
-    } else {
-      keyboardInfo.value.info = layout[0];
-    }
-  });
-  keyLayout.value = keyboardInfo.value;
-  keyLayout.value.info.matrix = [rowPins.value.length, colPins.value.length];
 });
 </script>
 

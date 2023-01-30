@@ -1,7 +1,8 @@
 <template>
   <div>
+    <p>Encoder setup is currently WIP (expect it to break)</p>
     <div
-      v-for="(encoder, index) in selectedkeyboard.layoutContents.encoders"
+      v-for="(encoder, index) in selectedKeyboard.configContents.encoders"
       class="my-2 p-4 bg-base-300 grid gap-4"
     >
       <p>Encoder {{ index }}</p>
@@ -25,12 +26,12 @@
       </div>
       <div>
         Keymap
-        <div v-for="(layer, lindex) in keymap" class="flex gap-4 items-center mb-4">
+        <div v-for="(layer, lindex) in selectedKeyboard.configContents.encoderKeymap" class="flex gap-4 items-center mb-4">
           <p class="w-24">
             layer {{lindex}}
           </p>
-          <input type="text" class="input input-bordered" v-model="selectedkeyboard.layoutContents.encoderKeymap[index][lindex][0]"/>
-          <input type="text" class="input input-bordered" v-model="selectedkeyboard.layoutContents.encoderKeymap[index][lindex][1]"/>
+          <input type="text" class="input input-bordered" v-model="selectedKeyboard.configContents.encoderKeymap[index][lindex][0]"/>
+          <input type="text" class="input input-bordered" v-model="selectedKeyboard.configContents.encoderKeymap[index][lindex][1]"/>
         </div>
       </div>
     </div>
@@ -41,19 +42,21 @@
 </template>
 
 <script lang="ts" setup>
-import { selectedkeyboard, keymap } from "@/store";
+import { selectedKeyboard, keymap } from "@/store";
 const addEncoder = () => {
-  if (!selectedkeyboard.value.layoutContents.encoders) {
-    selectedkeyboard.value.layoutContents.encoders = [];
+  if (!selectedKeyboard.value.configContents.encoders) {
+    selectedKeyboard.value.configContents.encoders = [];
   }
-  if (!selectedkeyboard.value.layoutContents.encoderKeymap) {
-    selectedkeyboard.value.layoutContents.encoderKeymap = [];
+  if (!selectedKeyboard.value.configContents.encoderKeymap) {
+    selectedKeyboard.value.configContents.encoderKeymap = [];
   }
   let encoder = { pad_a: "", pad_b: "" };
   // TODO: initialize encoder keymap according to layers and encoders
-  selectedkeyboard.value.layoutContents.encoderKeymap.push([])
-  selectedkeyboard.value.layoutContents.encoders.push(encoder);
+  selectedKeyboard.value.configContents.encoderKeymap.push([['KC.TRNS', 'KC.TRNS']])
+  selectedKeyboard.value.configContents.encoders.push(encoder);
 };
+
+
 </script>
 
 <style lang="scss" scoped></style>

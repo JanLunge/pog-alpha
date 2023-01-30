@@ -9,7 +9,7 @@
     class="btn btn-sm btn-primary"
     :class="{ 'btn-disabled': !pinsCompleted }"
     @click="$emit('next')"
-    v-if="$route.name !== pins"
+    v-if="$route.name !== 'pins'"
   >
     Next
   </div>
@@ -22,18 +22,18 @@
         <p class="pb-4 font-bold text-xl flex items-center justify-center">
           Row Pins
           <span class="ml-2 badge badge-primary font-bold">{{
-            selectedkeyboard.layoutContents.pins.rows.length
-          }}</span>
+              selectedKeyboard.configContents.pins.rows.length
+            }}</span>
         </p>
         <div
-          v-for="(pin, index) in selectedkeyboard.layoutContents.matrix.rows"
+          v-for="(pin, index) in selectedKeyboard.configContents.matrix.rows"
           class="grid grid-cols-6 items-center gap-2"
         >
           <p class="mr-2 text-right">{{ index + 1 }}</p>
           <input
             class="input input-sm input-bordered col-span-4"
             type="text"
-            v-model="selectedkeyboard.layoutContents.pins.rows[index]"
+            v-model="selectedKeyboard.configContents.pins.rows[index]"
             placeholder="GP17"
           />
         </div>
@@ -42,18 +42,18 @@
         <p class="pb-4 font-bold text-xl flex items-center justify-center">
           Column Pins
           <span class="ml-2 badge badge-primary font-bold">{{
-            selectedkeyboard.layoutContents.pins.cols.length
-          }}</span>
+              selectedKeyboard.configContents.pins.cols.length
+            }}</span>
         </p>
         <div
-          v-for="(pin, index) in selectedkeyboard.layoutContents.pins.cols"
+          v-for="(pin, index) in selectedKeyboard.configContents.pins.cols"
           class="grid grid-cols-6 items-center gap-2"
         >
           <span class="mr-2 text-right">{{ index + 1 }}</span>
           <input
             class="input input-sm input-bordered col-span-4"
             type="text"
-            v-model="selectedkeyboard.layoutContents.pins.cols[index]"
+            v-model="selectedKeyboard.configContents.pins.cols[index]"
             placeholder="GP17"
           />
         </div>
@@ -64,13 +64,13 @@
       style="width: 400px"
     >
       <select
-        v-model="selectedkeyboard.layoutContents.controller"
+        v-model="selectedKeyboard.configContents.controller"
         class="select select-bordered"
       >
         <option value="0xcb-helios">0xCB Helios</option>
         <option value="other">other</option>
       </select>
-      <div v-if="selectedkeyboard.layoutContents.controller === '0xcb-helios'">
+      <div v-if="selectedKeyboard.configContents.controller === '0xcb-helios'">
         <p class="p-4">
           The
           <a
@@ -83,7 +83,7 @@
         </p>
         <img src="@/assets/0xcb-helios.png" alt="" width="400" height="300" />
       </div>
-      <div v-if="selectedkeyboard.layoutContents.controller === 'other'">
+      <div v-if="selectedKeyboard.configContents.controller === 'other'">
         <ul class="p-4">
           <li>
             <a
@@ -110,25 +110,25 @@
 
 <script lang="ts" setup>
 import { computed, ref } from "vue";
-import { selectedkeyboard } from "@/store";
-if (!selectedkeyboard.value.layoutContents.pins) {
-  selectedkeyboard.value.layoutContents.pins = {
+import { selectedKeyboard } from "@/store";
+if (!selectedKeyboard.value.configContents.pins) {
+  selectedKeyboard.value.configContents.pins = {
     rows: [],
     cols: [],
   };
 }
-if (!selectedkeyboard.value.layoutContents.controller) {
-  selectedkeyboard.value.layoutContents.controller = "0xcb-helios";
+if (!selectedKeyboard.value.configContents.controller) {
+  selectedKeyboard.value.configContents.controller = "0xcb-helios";
 }
-selectedkeyboard.value.layoutContents.pins.cols.length =
-  selectedkeyboard.value.layoutContents.matrix.cols;
-selectedkeyboard.value.layoutContents.pins.rows.length =
-  selectedkeyboard.value.layoutContents.matrix.rows;
+selectedKeyboard.value.configContents.pins.cols.length =
+  selectedKeyboard.value.configContents.matrix.cols;
+selectedKeyboard.value.configContents.pins.rows.length =
+  selectedKeyboard.value.configContents.matrix.rows;
 
 const pinsCompleted = computed(() => {
-  if (selectedkeyboard.value.layoutContents.pins.cols.includes(""))
+  if (selectedKeyboard.value.configContents.pins.cols.includes(""))
     return false;
-  if (selectedkeyboard.value.layoutContents.pins.rows.includes(""))
+  if (selectedKeyboard.value.configContents.pins.rows.includes(""))
     return false;
   return true;
 });

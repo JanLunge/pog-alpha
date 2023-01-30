@@ -1,10 +1,13 @@
 <template>
-  <div class="text-center flex flex-col items-center w-full h-full" v-if="selectedkeyboard">
+  <div
+    class="text-center flex flex-col items-center w-full h-full"
+    v-if="selectedKeyboard"
+  >
     <div class="flex-grow-0">
       <h1 class="text-5xl font-bold my-4 mt-8">Initial Keyboard Setup</h1>
       <div class="flex">
         <div class="badge badge-primary badge-outline p-4 m-2 mb-8 mr-6">
-          Keyboard: {{ selectedkeyboard.path }}
+          Keyboard: {{ selectedKeyboard.path }}
         </div>
         <div class="btn btn-circle text-sm" @click="$emit('back')">
           reselect
@@ -22,21 +25,21 @@
         <li
           class="step"
           :class="{ 'step-primary': currentStep >= 1 }"
-          @click="currentStep > 1 ? currentStep = 1 : undefined"
+          @click="currentStep > 1 ? (currentStep = 1) : undefined"
         >
           Matrix
         </li>
         <li
           class="step"
           :class="{ 'step-primary': currentStep >= 2 }"
-          @click="currentStep > 2 ? currentStep = 2 : undefined"
+          @click="currentStep > 2 ? (currentStep = 2) : undefined"
         >
           Pins
         </li>
         <li
           class="step"
           :class="{ 'step-primary': currentStep >= 3 }"
-          @click="currentStep > 3 ? currentStep = 3 : undefined"
+          @click="currentStep > 3 ? (currentStep = 3) : undefined"
         >
           Layout
         </li>
@@ -46,12 +49,13 @@
       <KmkInstaller v-if="currentStep === 0" @next="currentStep++" />
       <MatrixSetup v-if="currentStep === 1" @next="currentStep++" />
       <PinSetup v-if="currentStep === 2" @next="currentStep++" />
-      <LayoutEditor v-if="currentStep === 3" @next="$emit('next')" />
+      <!--      <LayoutEditor v-if="currentStep === 3" @next="$emit('next')" />-->
+      <Tools v-if="currentStep === 3" @next="$emit('next')" />
     </div>
     <div class="mt-8 flex flex-col" v-if="currentStep === 'x'">
       <div class="keyboard-check">
         <span class="text-right">keyboard config</span>
-        <span class="badge badge-success" v-if="selectedkeyboard.hasCode"
+        <span class="badge badge-success" v-if="selectedKeyboard.hasCode"
           >exists</span
         >
         <button class="btn btn-xs btn-error" v-else @click="$emit('next')">
@@ -60,20 +64,20 @@
       </div>
       <div class="keyboard-check">
         <span class="text-right">Keyboard Layout</span>
-        <span class="badge badge-success" v-if="selectedkeyboard.hasLayout"
+        <span class="badge badge-success" v-if="selectedKeyboard.hasLayout"
           >exists</span
         >
         <button class="btn btn-xs btn-error" v-else>KLE missing</button>
       </div>
       <div class="keyboard-check">
         <span class="text-right">boot config</span>
-        <span class="badge badge-success" v-if="selectedkeyboard.hasBoot"
+        <span class="badge badge-success" v-if="selectedKeyboard.hasBoot"
           >exists</span
         >
         <button class="btn btn-xs btn-info" v-else>configure usb drive</button>
       </div>
       <div
-        v-if="selectedkeyboard.hasKmk && selectedkeyboard.hasCode"
+        v-if="selectedKeyboard.hasKmk && selectedKeyboard.hasCode"
         class="mt-4"
       >
         <p class="p-2">Essentials are ready to go</p>
@@ -86,12 +90,13 @@
 </template>
 
 <script lang="ts" setup>
-import { selectedkeyboard } from "@/store";
+import { selectedKeyboard } from "@/store";
 import { ref } from "vue";
 import KmkInstaller from "@/components/setup-wizard/KmkInstaller.vue";
 import MatrixSetup from "@/components/setup-wizard/MatrixSetup.vue";
 import PinSetup from "@/components/setup-wizard/PinSetup.vue";
 import LayoutEditor from "@/components/LayoutEditor.vue";
+import Tools from "@/components/Tools.vue";
 const currentStep = ref(0);
 const steps = ref(["kmk", "matrix", "pins", "layout"]);
 </script>
