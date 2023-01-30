@@ -70,6 +70,7 @@ const addLayer = () => {
   }
 };
 const removeLayer = () => {
+  if (keymap.value.length <= 1) return;
   keymap.value.pop();
   // if needed also add an encoder layer
   if (!selectedConfig.value) return;

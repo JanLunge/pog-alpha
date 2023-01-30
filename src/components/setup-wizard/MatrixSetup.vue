@@ -46,7 +46,10 @@
 import InputLabel from "@/components/ui/InputLabel.vue";
 import { selectedConfig } from "@/store";
 import { computed } from "vue";
-
+if(!selectedConfig.value){
+  // init the config after kmk install
+  (selectedConfig.value as any) = {}
+}
 if (selectedConfig.value) {
   if (!selectedConfig.value.matrix) {
     selectedConfig.value.matrix = {

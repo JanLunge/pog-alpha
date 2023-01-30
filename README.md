@@ -17,6 +17,8 @@ install everything with
 
 develop and do changes in the frontend (vue3 with vite)
 `yarn dev`
+or depending on your OS
+`yarn dev --host`
 
 run the electron application with the frontend server running
 `yarn electron:start`
