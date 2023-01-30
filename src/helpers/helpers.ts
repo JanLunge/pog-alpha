@@ -19,6 +19,7 @@ const formatMatrixFromLabel = (label: string): number[] | false => {
 };
 
 export const cleanupKeymap = () => {
+  if(!Array.isArray(keymap.value)) keymap.value = []
   keymap.value = keymap.value.map((layer) => {
     const tmpLayer = layer.map((key) => {
       // replace empty keys with KC.TRNS
