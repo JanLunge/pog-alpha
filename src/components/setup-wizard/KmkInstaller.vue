@@ -2,7 +2,11 @@
   <div class="p-4 mt-4">
     <p>
       <a href="https://kmkfw.io/" target="_blank" class="link">KMK</a> is a
-      capable firmware for keyboards using the rp2040. You can let kmk
+      capable firmware for keyboards using the rp2040.
+      </p>
+    <p>Before you proceed make sure you installed <a class="link" href="https://circuitpython.org/downloads" target="_blank">circuit python</a> on your controller</p>
+    <p>
+      You can let kmk
       automatically install to this keyboard
       <span class="font-mono">{{ selectedKeyboard.path }}</span>
     </p>

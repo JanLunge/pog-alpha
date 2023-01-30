@@ -44,8 +44,9 @@ const selectKeyboard = async () => {
       <!--      <div class="divider">OR</div>-->
 
       <div class="m-4 flex-grow justify-center flex flex-col">
-        <p class="pb-4">select a keyboard drive to continue</p>
-        <button class="btn btn-primary" @click="selectKeyboard">
+        <p class="pb-2">select a keyboard drive to continue</p>
+        <p>(Note: your controller needs to be running <a href="https://circuitpython.org/downloads" target="_blank" class="link">circuit python</a>)</p>
+        <button class="btn btn-primary mt-4" @click="selectKeyboard">
           Select Keyboard Drive
         </button>
       </div>
