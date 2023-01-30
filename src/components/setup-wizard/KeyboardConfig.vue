@@ -31,7 +31,16 @@
 import { computed, onMounted, ref, watch } from "vue";
 import filbert from "filbert";
 import sliceLines from "slice-lines";
-import { selectedKeyboard, selectedVariants, layoutVariants } from "@/store";
+import {
+  selectedKeyboard,
+  selectedVariants,
+  layoutVariants,
+  selectedConfig,
+  keymap,
+  keyLayout,
+} from "@/store";
+
+import { cleanupKeymap } from "@/helpers/helpers";
 const props = defineProps(["codeContents", "configContents"]);
 
 const rowPins = ref<string[]>([""]);
@@ -76,10 +85,6 @@ const keyboardWidth = computed({
     updateKeymapLength();
   },
 });
-import { keymap, keyLayout } from "@/store";
-import {cleanupKeymap, KleToPog} from "@/helpers/helpers";
-
-const codepyTmp = ref("");
 
 const updateKeymapLength = () => {
   // check each layer
@@ -92,7 +97,7 @@ const updateKeymapLength = () => {
     // add/remove missing
     while (keyDiff > 0) {
       if (diffAdd) {
-        keymap.value[index].push("KC.TRNS");
+        (keymap.value[index] as string[]).push("KC.TRNS");
       } else {
         keymap.value[index].pop();
       }
@@ -103,11 +108,12 @@ const updateKeymapLength = () => {
 
 // pass pog.json to backend to convert it ? or convert it here
 const saveKeymap = async () => {
+  if (!selectedConfig.value) return;
   const data = {
     rowPins: rowPins.value,
     colPins: colPins.value,
     keymap: keymap.value,
-    diodeDirection: selectedKeyboard.value.configContents.matrix.diodeDirection,
+    diodeDirection: selectedConfig.value.matrix.diodeDirection,
     config: selectedKeyboard.value,
   };
   if (!selectedKeyboard.value || !selectedKeyboard.value.configContents) return;
@@ -131,55 +137,57 @@ const extractData = ({
   propertyName: string;
   marker: string;
 }): { markedPythonDoc: string; data: any } | { error: boolean } => {
-  const cleanedPythonDoc = pythonDoc.replaceAll(",)", ")");
-  const codeast = filbert.parse(cleanedPythonDoc, {
-    range: true,
-    locations: true,
-  });
-  const expressions = codeast.body;
-  let result = { error: true };
-  expressions.forEach((expr: any) => {
-    const astExpr = expr.expression;
-    // if (!expr || !expr.left) return;
-    if (
-      astExpr &&
-      astExpr.type === "AssignmentExpression" &&
-      // astExpr.left.object.name === objectName &&
-      astExpr.left.property.name === propertyName
-    ) {
-      const tmp = sliceLines(
-        props.codeContents,
-        astExpr.loc.start.line - 1,
-        -1
-      );
-      const expressionResult = tmp.slice(
-        astExpr.loc.start.column,
-        astExpr.loc.end.column
-      );
-      const before = sliceLines(
-        props.codeContents,
-        0,
-        astExpr.loc.start.line - 1
-      );
-      const after = tmp.slice(astExpr.loc.end.column + 1);
-      // console.log(before, marker, after);
-      result = {
-        markedPythonDoc: before + marker + after,
-        data: astExpr,
-        pythonVariable: expressionResult,
-      };
-    }
-  });
-  return result;
+  return { error: true };
+  // const cleanedPythonDoc = pythonDoc.replaceAll(",)", ")");
+  // const codeast = filbert.parse(cleanedPythonDoc, {
+  //   range: true,
+  //   locations: true,
+  // });
+  // const expressions = codeast.body;
+  // let result = { error: true };
+  // expressions.forEach((expr: any) => {
+  //   const astExpr = expr.expression;
+  //   // if (!expr || !expr.left) return;
+  //   if (
+  //     astExpr &&
+  //     astExpr.type === "AssignmentExpression" &&
+  //     // astExpr.left.object.name === objectName &&
+  //     astExpr.left.property.name === propertyName
+  //   ) {
+  //     const tmp = sliceLines(
+  //       props.codeContents,
+  //       astExpr.loc.start.line - 1,
+  //       -1
+  //     );
+  //     const expressionResult = tmp.slice(
+  //       astExpr.loc.start.column,
+  //       astExpr.loc.end.column
+  //     );
+  //     const before = sliceLines(
+  //       props.codeContents,
+  //       0,
+  //       astExpr.loc.start.line - 1
+  //     );
+  //     const after = tmp.slice(astExpr.loc.end.column + 1);
+  //     // console.log(before, marker, after);
+  //     result = {
+  //       markedPythonDoc: before + marker + after,
+  //       data: astExpr,
+  //       pythonVariable: expressionResult,
+  //     };
+  //   }
+  // });
+  // return result;
 };
 
 onMounted(() => {
   // only read from the pog.json by default
 
   // legacy: set matrix size
+  if (!selectedKeyboard.value || !selectedKeyboard.value.configContents) return;
   rowPins.value = selectedKeyboard.value.configContents.pins.rows;
   colPins.value = selectedKeyboard.value.configContents.pins.cols;
-  if (!keyLayout.value.info) keyLayout.value.info = {};
+  if (!keyLayout.value.info) keyLayout.value.info = { matrix: [] };
   keyLayout.value.info.matrix = [rowPins.value.length, colPins.value.length];
 
   // TODO: Maybe fallback or alert when using non pog format
@@ -189,100 +197,101 @@ onMounted(() => {
   // if (!pogLayout) return;
 
   layoutVariants.value = props.configContents.layouts.labels;
-  selectedVariants.value = layoutVariants.value.map((a) => {
+  if (!layoutVariants.value) layoutVariants.value = [];
+  selectedVariants.value = layoutVariants.value.map((a: any) => {
     return 0;
   });
   keyLayout.value.keys = props.configContents.layouts.keymap;
-  keymap.value = props.configContents.currentKeymap
-  cleanupKeymap()
+  keymap.value = props.configContents.currentKeymap;
+  cleanupKeymap();
 
   return;
 
-  // extract keymap
-  const extractData1 = extractData({
-    pythonDoc: props.codeContents,
-    marker: "\n# pog marker  keymap\n",
-    objectName: "keyboard",
-    propertyName: "keymap",
-  });
-  // extract all layers
-  if (!extractData1.data.right.arguments) {
-    console.log("one keymap entry");
-    keymap.value = [
-      extractData1.data.right.object.name +
-        "." +
-        extractData1.data.right.property.name,
-    ];
-  } else {
-    keymap.value = extractData1.data.right.arguments.map((a) => {
-      console.log("keymap layer?", a);
-      return a.arguments.map((b) => {
-        if (b.type === "CallExpression") {
-          let props = b.arguments.map((p) => {
-            // if raw value
-            if (p.type === "Literal") {
-              return String(p.value);
-            }
-            return `${p.object.name}.${p.property.name}`;
-          });
-          if (b.callee.type === "MemberExpression") {
-            return `${b.callee.object.name}.${
-              b.callee.property.name
-            }(${props.join(",")})`;
-          } else {
-            return `${b.callee.name}(${props.join(",")})`;
-          }
-        }
-        // callee.name is needed in case then its arguments are used with the normal notation
-        return b.object.name + "." + b.property.name;
-      });
-    });
-    console.log("more than one keymap entry", keymap.value);
-  }
-
-  // extract cols
-  const extractData2 = extractData({
-    pythonDoc: extractData1.markedPythonDoc,
-    marker: "\n# pog marker col_pins\n",
-    objectName: "keyboard",
-    propertyName: "col_pins",
-  });
-  if (!extractData2.data.right.arguments) {
-    // just one property
-    console.log("one col Pin");
-    colPins.value = [
-      extractData2.data.right.object.name +
-        "." +
-        extractData2.data.right.property.name,
-    ];
-  } else {
-    colPins.value = extractData2.data.right.arguments.map(
-      (a) => a.object.name + "." + a.property.name
-    );
-    console.log("more than one col pin", colPins.value, extractData2.data);
-  }
-  // colPins.value = extractData2.data
-  const extractData3 = extractData({
-    pythonDoc: extractData2.markedPythonDoc,
-    marker: "\n# pog marker col_pins\n",
-    objectName: "keyboard",
-    propertyName: "row_pins",
-  });
-  if (!extractData3.data.right.arguments) {
-    // just one property
-    console.log("one row pin", extractData3.data);
-    rowPins.value = [
-      extractData3.data.right.object.name +
-        "." +
-        extractData3.data.right.property.name,
-    ];
-  } else {
-    rowPins.value = extractData3.data.right.arguments.map(
-      (a) => a.object.name + "." + a.property.name
-    );
-    console.log("more than one row pin", colPins.value);
-  }
-  codepyTmp.value = extractData3.markedPythonDoc;
+  // // extract keymap
+  // const extractData1 = extractData({
+  //   pythonDoc: props.codeContents,
+  //   marker: "\n# pog marker  keymap\n",
+  //   objectName: "keyboard",
+  //   propertyName: "keymap",
+  // });
+  // // extract all layers
+  // if (!extractData1.data.right.arguments) {
+  //   console.log("one keymap entry");
+  //   keymap.value = [
+  //     extractData1.data.right.object.name +
+  //       "." +
+  //       extractData1.data.right.property.name,
+  //   ];
+  // } else {
+  //   keymap.value = extractData1.data.right.arguments.map((a) => {
+  //     console.log("keymap layer?", a);
+  //     return a.arguments.map((b) => {
+  //       if (b.type === "CallExpression") {
+  //         let props = b.arguments.map((p) => {
+  //           // if raw value
+  //           if (p.type === "Literal") {
+  //             return String(p.value);
+  //           }
+  //           return `${p.object.name}.${p.property.name}`;
+  //         });
+  //         if (b.callee.type === "MemberExpression") {
+  //           return `${b.callee.object.name}.${
+  //             b.callee.property.name
+  //           }(${props.join(",")})`;
+  //         } else {
+  //           return `${b.callee.name}(${props.join(",")})`;
+  //         }
+  //       }
+  //       // callee.name is needed in case then its arguments are used with the normal notation
+  //       return b.object.name + "." + b.property.name;
+  //     });
+  //   });
+  //   console.log("more than one keymap entry", keymap.value);
+  // }
+  //
+  // // extract cols
+  // const extractData2 = extractData({
+  //   pythonDoc: extractData1.markedPythonDoc,
+  //   marker: "\n# pog marker col_pins\n",
+  //   objectName: "keyboard",
+  //   propertyName: "col_pins",
+  // });
+  // if (!extractData2.data.right.arguments) {
+  //   // just one property
+  //   console.log("one col Pin");
+  //   colPins.value = [
+  //     extractData2.data.right.object.name +
+  //       "." +
+  //       extractData2.data.right.property.name,
+  //   ];
+  // } else {
+  //   colPins.value = extractData2.data.right.arguments.map(
+  //     (a) => a.object.name + "." + a.property.name
+  //   );
+  //   console.log("more than one col pin", colPins.value, extractData2.data);
+  // }
+  // // colPins.value = extractData2.data
+  // const extractData3 = extractData({
+  //   pythonDoc: extractData2.markedPythonDoc,
+  //   marker: "\n# pog marker col_pins\n",
+  //   objectName: "keyboard",
+  //   propertyName: "row_pins",
+  // });
+  // if (!extractData3.data.right.arguments) {
+  //   // just one property
+  //   console.log("one row pin", extractData3.data);
+  //   rowPins.value = [
+  //     extractData3.data.right.object.name +
+  //       "." +
+  //       extractData3.data.right.property.name,
+  //   ];
+  // } else {
+  //   rowPins.value = extractData3.data.right.arguments.map(
+  //     (a) => a.object.name + "." + a.property.name
+  //   );
+  //   console.log("more than one row pin", colPins.value);
+  // }
+  // codepyTmp.value = extractData3.markedPythonDoc;
 });
 </script>
 

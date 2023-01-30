@@ -13,7 +13,7 @@
   >
     Next
   </div>
-  <div class="flex gap-4 mt-5 justify-center">
+  <div class="flex gap-4 mt-5 justify-center" v-if="selectedConfig">
     <div class="flex-grow-0">
       <div
         class="rounded bg-base-300 p-2 grid grid-cols-1 gap-2 mb-4 py-8"
@@ -22,18 +22,18 @@
         <p class="pb-4 font-bold text-xl flex items-center justify-center">
           Row Pins
           <span class="ml-2 badge badge-primary font-bold">{{
-              selectedKeyboard.configContents.pins.rows.length
-            }}</span>
+            selectedConfig.pins.rows.length
+          }}</span>
         </p>
         <div
-          v-for="(pin, index) in selectedKeyboard.configContents.matrix.rows"
+          v-for="(pin, index) in selectedConfig.matrix.rows"
           class="grid grid-cols-6 items-center gap-2"
         >
           <p class="mr-2 text-right">{{ index + 1 }}</p>
           <input
             class="input input-sm input-bordered col-span-4"
             type="text"
-            v-model="selectedKeyboard.configContents.pins.rows[index]"
+            v-model="selectedConfig.pins.rows[index]"
             placeholder="GP17"
           />
         </div>
@@ -42,18 +42,18 @@
         <p class="pb-4 font-bold text-xl flex items-center justify-center">
           Column Pins
           <span class="ml-2 badge badge-primary font-bold">{{
-              selectedKeyboard.configContents.pins.cols.length
-            }}</span>
+            selectedConfig.pins.cols.length
+          }}</span>
         </p>
         <div
-          v-for="(pin, index) in selectedKeyboard.configContents.pins.cols"
+          v-for="(pin, index) in selectedConfig.pins.cols"
           class="grid grid-cols-6 items-center gap-2"
         >
           <span class="mr-2 text-right">{{ index + 1 }}</span>
           <input
             class="input input-sm input-bordered col-span-4"
             type="text"
-            v-model="selectedKeyboard.configContents.pins.cols[index]"
+            v-model="selectedConfig.pins.cols[index]"
             placeholder="GP17"
           />
         </div>
@@ -64,13 +64,13 @@
       style="width: 400px"
     >
       <select
-        v-model="selectedKeyboard.configContents.controller"
+        v-model="selectedConfig.controller"
         class="select select-bordered"
       >
         <option value="0xcb-helios">0xCB Helios</option>
         <option value="other">other</option>
       </select>
-      <div v-if="selectedKeyboard.configContents.controller === '0xcb-helios'">
+      <div v-if="selectedConfig.controller === '0xcb-helios'">
         <p class="p-4">
           The
           <a
@@ -83,7 +83,7 @@
         </p>
         <img src="@/assets/0xcb-helios.png" alt="" width="400" height="300" />
       </div>
-      <div v-if="selectedKeyboard.configContents.controller === 'other'">
+      <div v-if="selectedConfig.controller === 'other'">
         <ul class="p-4">
           <li>
             <a
@@ -110,26 +110,24 @@
 
 <script lang="ts" setup>
 import { computed, ref } from "vue";
-import { selectedKeyboard } from "@/store";
-if (!selectedKeyboard.value.configContents.pins) {
-  selectedKeyboard.value.configContents.pins = {
-    rows: [],
-    cols: [],
-  };
+import { selectedConfig, selectedKeyboard } from "@/store";
+if (selectedConfig.value) {
+  if (!selectedConfig.value.pins) {
+    selectedConfig.value.pins = {
+      rows: [],
+      cols: [],
+    };
+  }
+  if (!selectedConfig.value.controller) {
+    selectedConfig.value.controller = "0xcb-helios";
+  }
+  selectedConfig.value.pins.cols.length = selectedConfig.value.matrix.cols;
+  selectedConfig.value.pins.rows.length = selectedConfig.value.matrix.rows;
 }
-if (!selectedKeyboard.value.configContents.controller) {
-  selectedKeyboard.value.configContents.controller = "0xcb-helios";
-}
-selectedKeyboard.value.configContents.pins.cols.length =
-  selectedKeyboard.value.configContents.matrix.cols;
-selectedKeyboard.value.configContents.pins.rows.length =
-  selectedKeyboard.value.configContents.matrix.rows;
-
 const pinsCompleted = computed(() => {
-  if (selectedKeyboard.value.configContents.pins.cols.includes(""))
-    return false;
-  if (selectedKeyboard.value.configContents.pins.rows.includes(""))
-    return false;
+  if (!selectedConfig.value) return;
+  if (selectedConfig.value.pins.cols.includes("")) return false;
+  if (selectedConfig.value.pins.rows.includes("")) return false;
   return true;
 });
 </script>

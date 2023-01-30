@@ -7,10 +7,18 @@
   "author": "Jan Lunge",
   "build": {
     "appId": "pog.heaper.de",
+    "icon": "./build/icon.png",
     "mac": {
       "category": "productivity"
-    }
+     }
   },
+  "files": [
+    "package.json",
+    "frontend_dist/**/*",
+    "node_modules",
+    "!src",
+    "!release"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check build-only",
@@ -20,7 +28,7 @@
     "electron:start": "electron .",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist": "yarn build && NODE_ENV=production electron-builder"
   },
   "dependencies": {
     "@vue/devtools": "^6.4.5",

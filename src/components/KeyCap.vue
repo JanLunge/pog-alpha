@@ -87,13 +87,12 @@
 
 <script lang="ts" setup>
 import { computed, ref, watch } from "vue";
+import { keymap, selectedKey, selectedLayer, selectedVariants } from "@/store";
 
 const props = defineProps(["keyData", "keyLayout"]);
 const emit = defineEmits(["selected"]);
-import { keymap } from "@/store";
 
 const keyGap = 4;
-import { selectedLayer, selectedVariants } from "@/store";
 // hide normal labels and show the keymap thing
 const action = computed(() => {
   let position = props.keyData.matrix; // [0,0] // row, col
@@ -114,11 +113,12 @@ const visible = computed(() => {
   if (props.keyData.d) {
     return false;
   }
-  let variant = props.keyData.variant;
+  let variant: number[] = props.keyData.variant;
   if (variant) {
     // if (variant[0] === 3) {
     //   console.log(variant[0], selectedVariants.value[variant[0]].value);
     // }
+    if(variant.length !== 2) return false
     return selectedVariants.value[variant[0]] == variant[1];
     // return variant[1] === 0
   }
@@ -222,7 +222,6 @@ const argClick = () => {
   emit("selected", { key: props.keyData.matrix, args: argsSelected.value });
 };
 
-import { selectedKey } from "@/store";
 watch(
   () => selectedKey.value.key,
   (newValue) => {

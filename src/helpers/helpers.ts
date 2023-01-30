@@ -19,13 +19,16 @@ const formatMatrixFromLabel = (label: string): number[] | false => {
 };
 
 export const cleanupKeymap = () => {
-  if(!Array.isArray(keymap.value)) keymap.value = []
-  keymap.value = keymap.value.map((layer) => {
+  if (!Array.isArray(keymap.value)) keymap.value = [];
+  const filledKeymap = keymap.value.map((layer) => {
     const tmpLayer = layer.map((key) => {
       // replace empty keys with KC.TRNS
       if (!key) return "KC.TRNS";
       return key;
     });
+
+    if (!selectedKeyboard.value || !selectedKeyboard.value.configContents)
+      return [];
     const matrixWidth = selectedKeyboard.value.configContents.matrix.cols;
     const matrixHeight = selectedKeyboard.value.configContents.matrix.rows;
     const matrixKeyCount = matrixHeight * matrixWidth;
@@ -38,8 +41,10 @@ export const cleanupKeymap = () => {
         tmpLayer.pop();
       }
     }
-    return tmpLayer;
+    if (tmpLayer) return tmpLayer;
+    return [];
   });
+  if (filledKeymap) keymap.value = filledKeymap;
 };
 
 const pickKeyAttributes = ({
@@ -73,33 +78,26 @@ const pickKeyAttributes = ({
 // convert a kle keymap to pog
 export const KleToPog = (kleString: string) => {
   // parse Layout file
-  const configContents = {
-    layouts: { keymap: JSON5.parse(kleString) },
-    labels: [],
+  const configContents: {
+    layouts: { keymap: string[][]; labels: string[] | string[][] };
+  } = {
+    layouts: { keymap: JSON5.parse(kleString), labels: [] },
   };
-  const keyboardInfo = ref({ info: { matrix: [] }, keys: [] });
+  const keyboardInfo = ref<{
+    keys: KeyData[];
+  }>({ keys: [] });
 
   // in place update kle to pog layout => iterate over rows
   let currentX = 0;
   let currentY = 0;
-  let keydata = undefined; // data to carry over to the next key until it is overwritten
+  let keydata: any = undefined; // data to carry over to the next key until it is overwritten
   let firstKeyInRow = true;
-  // TODO: can be read seperately
-  // layoutVariants.value = configContents.layouts.labels;
-  // selectedVariants.value = layoutVariants.value.map((a) => {
-  //   return 0;
-  // });
   configContents.layouts.keymap.forEach((row) => {
     if (Array.isArray(row)) {
       // normal row
       row.forEach((keyOrData) => {
         // tmp key info
-        let key: {
-          labels: string[];
-          matrix: number[];
-          matrixPos: string;
-          variant: number[];
-        } = {};
+        let key: KeyData = { x: NaN, y: NaN };
         if (typeof keyOrData === "string") {
           // this is a key
           const labels = keyOrData.split("\n");
@@ -155,13 +153,8 @@ export const KleToPog = (kleString: string) => {
       currentX = 0;
       firstKeyInRow = true;
       currentY++;
-    } else {
-      keyboardInfo.value.info = configContents[0];
     }
   });
   console.log("created layout", keyboardInfo.value);
-  // keyLayout.value = keyboardInfo.value;
-  // if (!keyLayout.value.info) keyLayout.value.info = {};
-  // keyLayout.value.info.matrix = [rowPins.value.length, colPins.value.length];
   return keyboardInfo.value.keys;
 };

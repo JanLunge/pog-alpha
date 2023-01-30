@@ -1,6 +1,6 @@
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
-export const selectedKey = ref({
+export const selectedKey = ref<{key: number[]|undefined, args: boolean}>({
   key: undefined,
   args: false,
 });
@@ -23,7 +23,7 @@ export const selectedKeyboard = ref<{
         };
         encoders: any[];
         encoderKeymap: string[][][]; // layer > encoder index > encoder action index > keycode
-        currentKeymap: string[][]; // layer > key index > keycode
+        currentKeymap: (string | undefined)[][]; // layer > key index > keycode
         pins: { rows: string[]; cols: string[] };
         layouts: { labels: string[]; keymap: any[] };
       };
@@ -37,11 +37,24 @@ export const selectedKeyboard = ref<{
   configContents: undefined,
 });
 
-export const selectedVariants = ref({});
-export const layoutVariants = ref(undefined);
+export const selectedConfig = computed({
+  get() {
+    return selectedKeyboard.value.configContents;
+  },
+  set(value) {
+    selectedKeyboard.value.configContents = value;
+  },
+});
 
-export const keymap = ref<string[][]>([["", ""]]);
-export const keyLayout = ref<{ info: { matrix: number[] }; keys: any[] }>({
+// [0,2,3] index of array is the selected layout and the value its option
+export const selectedVariants = ref<number[]>([]);
+export const layoutVariants = ref<(string | string[])[]>([]);
+
+export const keymap = ref<string[][] | undefined[][]>([["KC.TRNS", "KC.TRNS"]]);
+export const keyLayout = ref<{
+  info: { matrix: number[] };
+  keys: any[];
+}>({
   keys: [],
-  info: { matrix: [] },
+  info: { matrix: [0, 0] },
 });

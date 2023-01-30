@@ -19,12 +19,20 @@
 </template>
 
 <script lang="ts" setup>
-import {keyLayout, keymap, selectedKey, selectedKeyboard, selectedLayer} from "@/store";
+import {
+  keyLayout,
+  keymap,
+  selectedConfig,
+  selectedKey,
+  selectedKeyboard,
+  selectedLayer,
+} from "@/store";
 import KeyboardLayout from "@/components/KeyboardLayout.vue";
 import KeyPicker from "@/components/setup-wizard/KeyPicker.vue";
 import { matrixPositionToIndex } from "@/helpers/helpers";
 
 const setKey = (keyCode: string) => {
+  if(!selectedKey.value.key) return
   const keyIndex = matrixPositionToIndex({
     pos: selectedKey.value.key,
     matrixSize: keyLayout.value.info.matrix,
@@ -33,7 +41,11 @@ const setKey = (keyCode: string) => {
   const currentKeyAction = keymap.value[selectedLayer.value][keyIndex];
   if (!keyCode.includes("(")) {
     // could set this as arg in a key
-    if (currentKeyAction && currentKeyAction.includes("(") && selectedKey.value.args) {
+    if (
+      currentKeyAction &&
+      currentKeyAction.includes("(") &&
+      selectedKey.value.args
+    ) {
       // Validate for what args this function takes
       // only set this as arg
       // TODO: handle multiple args
@@ -48,19 +60,23 @@ const setKey = (keyCode: string) => {
 const addLayer = () => {
   const tmpKeymap = [...keymap.value[0]];
   tmpKeymap.fill("KC.TRNS");
-  keymap.value.push(tmpKeymap);
+  (keymap.value as any).push(tmpKeymap);
   // if needed also add an encoder layer
-  const encoderCount = selectedKeyboard.value.configContents.encoders.length
-  if( encoderCount !== 0){
-    selectedKeyboard.value.configContents.encoderKeymap.push(Array(encoderCount).fill(['KC.TRNS', 'KC.TRNS']))
+  if (!selectedConfig.value) return;
+  const encoderCount = selectedConfig.value.encoders.length;
+  if (encoderCount !== 0) {
+    selectedConfig.value.encoderKeymap.push(
+      Array(encoderCount).fill(["KC.TRNS", "KC.TRNS"])
+    );
   }
 };
 const removeLayer = () => {
   keymap.value.pop();
   // if needed also add an encoder layer
-  const encoderCount = selectedKeyboard.value.configContents.encoders.length
-  if( encoderCount !== 0){
-    selectedKeyboard.value.configContents.encoderKeymap.pop()
+  if (!selectedConfig.value) return;
+  const encoderCount = selectedConfig.value.encoders.length;
+  if (encoderCount !== 0) {
+    selectedConfig.value.encoderKeymap.pop();
   }
 };
 </script>

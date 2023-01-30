@@ -1,4 +1,9 @@
-# pog keyboard flashing utility
+# pog 
+keyboard flashing utility
+
+![version](https://badgen.net/badge/version/v0.0.9/green )
+
+![logo](build/icon.png?raw=true)
 
 ![preview](src/assets/pog-thumbnail.png?raw=true)
 
@@ -17,8 +22,8 @@ run the electron application with the frontend server running
 `yarn electron:start`
 
 
-If you want to build the final application you will need to change the loaded \
-window url in the main.js to the packaged file (still WIP)
+If you want to build the final application you will need to change \
+the building const in main.js to true
 then to package the application run
 `yarn dist`
 

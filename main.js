@@ -1,3 +1,4 @@
+const build = false;
 const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const path = require("path");
 const fs = require("fs-extra");
@@ -11,7 +12,6 @@ const {
   default: installExtension,
   VUEJS3_DEVTOOLS,
 } = require("electron-devtools-installer");
-
 // download kmk and copy it to the keyboard
 function downloadFile(file_url, targetPath) {
   if (!fs.existsSync(appDir)) {
@@ -224,9 +224,11 @@ function createWindow() {
     shell.openExternal(url);
     return { action: "deny" };
   });
-
-  //win.loadFile("dist/index.html");
-  win.loadURL("http://127.0.0.1:9888/");
+  if (!build) {
+    win.loadURL("http://127.0.0.1:9888/");
+  } else {
+    win.loadFile("./frontend_dist/index.html");
+  }
 }
 const scanForKeyboards = () => {};
 app.whenReady().then(() => {

@@ -49,42 +49,7 @@
       <KmkInstaller v-if="currentStep === 0" @next="currentStep++" />
       <MatrixSetup v-if="currentStep === 1" @next="currentStep++" />
       <PinSetup v-if="currentStep === 2" @next="currentStep++" />
-      <!--      <LayoutEditor v-if="currentStep === 3" @next="$emit('next')" />-->
       <Tools v-if="currentStep === 3" @next="$emit('next')" />
-    </div>
-    <div class="mt-8 flex flex-col" v-if="currentStep === 'x'">
-      <div class="keyboard-check">
-        <span class="text-right">keyboard config</span>
-        <span class="badge badge-success" v-if="selectedKeyboard.hasCode"
-          >exists</span
-        >
-        <button class="btn btn-xs btn-error" v-else @click="$emit('next')">
-          configure keyboard
-        </button>
-      </div>
-      <div class="keyboard-check">
-        <span class="text-right">Keyboard Layout</span>
-        <span class="badge badge-success" v-if="selectedKeyboard.hasLayout"
-          >exists</span
-        >
-        <button class="btn btn-xs btn-error" v-else>KLE missing</button>
-      </div>
-      <div class="keyboard-check">
-        <span class="text-right">boot config</span>
-        <span class="badge badge-success" v-if="selectedKeyboard.hasBoot"
-          >exists</span
-        >
-        <button class="btn btn-xs btn-info" v-else>configure usb drive</button>
-      </div>
-      <div
-        v-if="selectedKeyboard.hasKmk && selectedKeyboard.hasCode"
-        class="mt-4"
-      >
-        <p class="p-2">Essentials are ready to go</p>
-        <button class="btn btn-sm btn-primary" @click="$emit('next')">
-          configure keyboard
-        </button>
-      </div>
     </div>
   </div>
 </template>

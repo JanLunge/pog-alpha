@@ -22,14 +22,13 @@
 <script lang="ts" setup>
 import KeyCap from "@/components/KeyCap.vue";
 import { computed, ref } from "vue";
-
-const props = defineProps(["keyLayout", "keymap"]);
 import { selectedKey } from "@/store";
+const props = defineProps(["keyLayout", "keymap"]);
 
 // find right edge
 const keyboardWidth = computed(() => {
   let maxW = 0;
-  props.keyLayout.keys.forEach((k) => {
+  props.keyLayout.keys.forEach((k:any) => {
     let width = k.w || 1;
     let rightEdge = k.x + width;
     if (rightEdge > maxW) {
@@ -42,7 +41,7 @@ const keyboardWidth = computed(() => {
 // find bottom edge
 const keyboardHeight = computed(() => {
   let maxH = 0;
-  props.keyLayout.keys.forEach((k) => {
+  props.keyLayout.keys.forEach((k:KeyData) => {
     let height = k.h || 1;
     let bottomEdge = k.y + height;
     if (bottomEdge > maxH) {
@@ -52,7 +51,7 @@ const keyboardHeight = computed(() => {
   return maxH;
 });
 
-const keyChanged = ({ key, args }) => {
+const keyChanged = ({ key, args }: { key: number[]; args: boolean }) => {
   selectedKey.value.key = key;
   selectedKey.value.args = args;
 };

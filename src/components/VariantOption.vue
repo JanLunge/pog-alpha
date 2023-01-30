@@ -24,7 +24,12 @@
       {{ variant }}
     </p>
     <div class="flex gap-4">
-      <input type="checkbox" class="checkbox" v-model="selectedBool" @input="selectBool">
+      <input
+        type="checkbox"
+        class="checkbox"
+        v-model="selectedBool"
+        @input="selectBool"
+      />
     </div>
   </div>
 </template>
@@ -35,17 +40,23 @@ import { selectedVariants } from "@/store";
 
 const props = defineProps(["variant", "index"]);
 const selectedOption = ref(0);
-const selectedBool = ref(false)
+const selectedBool = ref(false);
 
-selectedBool.value = selectedVariants.value[props.index] === 1 ? true:false
-selectedOption.value = selectedVariants.value[props.index]
+selectedBool.value = selectedVariants.value[props.index] === 1 ? true : false;
+selectedOption.value = selectedVariants.value[props.index];
 const selectMultiVariant = () => {
   selectVariant({ layout: props.index, variant: selectedOption.value });
 };
-const selectBool = (newVal) => {
-  selectVariant({ layout: props.index, variant: !selectedBool.value ? 1 : 0 })
-}
-const selectVariant = ({ layout, variant }) => {
+const selectBool = () => {
+  selectVariant({ layout: props.index, variant: !selectedBool.value ? 1 : 0 });
+};
+const selectVariant = ({
+  layout,
+  variant,
+}: {
+  layout: number;
+  variant: number;
+}) => {
   selectedVariants.value[layout] = variant;
 };
 </script>

@@ -1,12 +1,12 @@
 <template>
   <p class="font-bold">Keymap</p>
-  <div>
+  <div v-if="selectedConfig">
     <div v-for="(layer, layerindex) in keymap">
       layer {{ layerindex }}
       <div
           class="border rounded border-opacity-40 border-white p-2 grid gap-2 mb-4"
           :style="{
-            gridTemplateColumns: `repeat(${selectedKeyboard.configContents.matrix.cols}, minmax(0, 1fr))`,
+            gridTemplateColumns: `repeat(${selectedConfig.matrix.cols}, minmax(0, 1fr))`,
           }"
       >
         <input
@@ -22,7 +22,7 @@
 
 <script lang="ts" setup>
 
-import {keymap, selectedKeyboard} from "@/store";
+import {keymap, selectedConfig } from "@/store";
 </script>
 
 <style lang="scss" scoped>
