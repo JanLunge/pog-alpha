@@ -1,6 +1,6 @@
 import { computed, ref } from "vue";
 
-export const selectedKey = ref<{key: number[]|undefined, args: boolean}>({
+export const selectedKey = ref<{ key: number[] | undefined; args: boolean }>({
   key: undefined,
   args: false,
 });
@@ -50,7 +50,7 @@ export const selectedConfig = computed({
 export const selectedVariants = ref<number[]>([]);
 export const layoutVariants = ref<(string | string[])[]>([]);
 
-export const keymap = ref<string[][] | undefined[][]>([["KC.TRNS", "KC.TRNS"]]);
+export const keymap = ref<(string | undefined)[][]>([["KC.TRNS", "KC.TRNS"]]);
 export const keyLayout = ref<{
   info: { matrix: number[] };
   keys: any[];

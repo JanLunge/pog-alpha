@@ -1,8 +1,10 @@
 <template>
   <div class="p-4 mt-4">
-    <p class="max-w-md">
-      KMK is a capable firmware for keyboards using the rp2040. You can let kmk
-      automatically install here or do the procedure manually
+    <p>
+      <a href="https://kmkfw.io/" target="_blank" class="link">KMK</a> is a
+      capable firmware for keyboards using the rp2040. You can let kmk
+      automatically install to this keyboard
+      <span class="font-mono">{{ selectedKeyboard.path }}</span>
     </p>
     <div
       class="keyboard-check m-4 flex flex-col justify-center"

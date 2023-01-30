@@ -5,21 +5,20 @@ import NewKeyboardSetup from "@/views/newKeyboardSetup.vue";
 
 import { selectedKeyboard } from "@/store";
 import router from "@/router";
-
-const openFolderModal = async () => {
-  selectedKeyboard.value = await (window as any).electronAPI.openFile();
-  if (selectedKeyboard.value.path) {
-    if (selectedKeyboard.value.hasConfig) {
-      wizardStep.value = 2;
-      router.push("/keymap");
-    } else {
-      wizardStep.value = 1;
-    }
-  }
-  console.log(selectedKeyboard);
-};
+import { openFolderModal } from "@/helpers/electron";
 
 const wizardStep = ref(0);
+const selectKeyboard = async () => {
+  const selection = await openFolderModal();
+  if (!selection.path) return;
+  selectedKeyboard.value = selection;
+  if (selectedKeyboard.value.hasConfig) {
+    wizardStep.value = 2;
+    router.push("/keymap");
+  } else {
+    wizardStep.value = 1;
+  }
+};
 </script>
 
 <template>
@@ -46,7 +45,7 @@ const wizardStep = ref(0);
 
       <div class="m-4 flex-grow justify-center flex flex-col">
         <p class="pb-4">select a keyboard drive to continue</p>
-        <button class="btn btn-primary" @click="openFolderModal">
+        <button class="btn btn-primary" @click="selectKeyboard">
           Select Keyboard Drive
         </button>
       </div>

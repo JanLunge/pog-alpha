@@ -1,9 +1,19 @@
 <template>
   <div class="flex">
     <ul
-      class="menu bg-base-100 w-56 flex-shrink-0 pt-8 border-r border-opacity-40 border-white"
+      class="menu bg-base-100 w-56 flex-shrink-0 border-r border-opacity-40 border-white"
     >
-      <li class="p-4 text-xl font-bold text-center">pog</li>
+      <li class="p-4 text-xl font-bold flex items-center">
+        <img src="@/assets/icon.png" alt="" class="w-24" />
+      </li>
+      <li class="text-xs pl-4 py-2">Selected Keyboard</li>
+      <li class="p-4 pt-0 flex items-center">
+        <span
+          @click="reselectKeyboard"
+          class="rounded text-center bg-primary text-xs text-black w-full cursor-pointer opacity-70 hover:opacity-100"
+          >{{ keyboardName }}</span
+        >
+      </li>
       <li><router-link to="/keymap">Keymap</router-link></li>
       <li><router-link to="/layout-options">Layout Options</router-link></li>
       <hr class="border-white border-opacity-40" />
@@ -41,7 +51,13 @@ import {
 } from "@/store";
 
 import { cleanupKeymap } from "@/helpers/helpers";
+import { openFolderModal } from "@/helpers/electron";
 const props = defineProps(["codeContents", "configContents"]);
+
+const keyboardName = computed(() => {
+  const path = selectedKeyboard.value.path;
+  return path.split("/").pop();
+});
 
 const rowPins = ref<string[]>([""]);
 const keyboardHeight = computed({
@@ -180,31 +196,36 @@ const extractData = ({
   // return result;
 };
 
-onMounted(() => {
+const reselectKeyboard = async () => {
+  const selection = await openFolderModal();
+  if(!selection.path) return
+  selectedKeyboard.value = selection
+  console.log(selectedKeyboard.value.path);
+  initSelectedKeyboard()
+};
+
+const initSelectedKeyboard = () => {
   // only read from the pog.json by default
 
   // legacy: set matrix size
-  if (!selectedKeyboard.value || !selectedKeyboard.value.configContents) return;
+  if (!selectedKeyboard.value || !selectedKeyboard.value.configContents || !selectedConfig.value) return;
   rowPins.value = selectedKeyboard.value.configContents.pins.rows;
   colPins.value = selectedKeyboard.value.configContents.pins.cols;
   if (!keyLayout.value.info) keyLayout.value.info = { matrix: [] };
   keyLayout.value.info.matrix = [rowPins.value.length, colPins.value.length];
 
-  // TODO: Maybe fallback or alert when using non pog format
-  // const pogLayout = KleToPog(
-  //   JSON.stringify(props.configContents.layouts.keymap)
-  // );
-  // if (!pogLayout) return;
-
-  layoutVariants.value = props.configContents.layouts.labels;
+  layoutVariants.value = selectedConfig.value.layouts.labels;
   if (!layoutVariants.value) layoutVariants.value = [];
   selectedVariants.value = layoutVariants.value.map((a: any) => {
     return 0;
   });
-  keyLayout.value.keys = props.configContents.layouts.keymap;
-  keymap.value = props.configContents.currentKeymap;
+  keyLayout.value.keys = selectedConfig.value.layouts.keymap;
+  keymap.value = selectedConfig.value.currentKeymap;
   cleanupKeymap();
+};
 
+onMounted(() => {
+  initSelectedKeyboard();
   return;
 
   // // extract keymap

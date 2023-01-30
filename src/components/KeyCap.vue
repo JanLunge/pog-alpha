@@ -87,9 +87,9 @@
 
 <script lang="ts" setup>
 import { computed, ref, watch } from "vue";
-import { keymap, selectedKey, selectedLayer, selectedVariants } from "@/store";
+import {keymap, selectedConfig, selectedKey, selectedLayer, selectedVariants} from "@/store";
 
-const props = defineProps(["keyData", "keyLayout"]);
+const props = defineProps(["keyData"]);
 const emit = defineEmits(["selected"]);
 
 const keyGap = 4;
@@ -98,15 +98,17 @@ const action = computed(() => {
   let position = props.keyData.matrix; // [0,0] // row, col
   if (!position) return "";
   let indexes = position;
-  if (!props.keyLayout) return "error";
-  if (!props.keyLayout.matrix) return "err matrix";
-  let matrixWidth = props.keyLayout.matrix[1];
+  if (!selectedConfig.value) return "error";
+  const matrixWidth = selectedConfig.value.matrix.cols;
   // console.log(props.keyLayout, matrixWidth);
   let keyIndex = Number(indexes[0]) * matrixWidth + Number(indexes[1]);
   if (indexes.length === 2) {
     // console.log("keyindex", keyIndex);
   }
-  return keymap.value[selectedLayer.value][keyIndex] || "▽";
+  let keyCode = keymap.value[selectedLayer.value][keyIndex]
+  // resolve readable character
+  if(!keyCode || keyCode === "KC.TRNS") return "▽"
+  return keyCode;
 });
 
 const visible = computed(() => {

@@ -24,7 +24,6 @@ import {
   keymap,
   selectedConfig,
   selectedKey,
-  selectedKeyboard,
   selectedLayer,
 } from "@/store";
 import KeyboardLayout from "@/components/KeyboardLayout.vue";
@@ -32,7 +31,7 @@ import KeyPicker from "@/components/setup-wizard/KeyPicker.vue";
 import { matrixPositionToIndex } from "@/helpers/helpers";
 
 const setKey = (keyCode: string) => {
-  if(!selectedKey.value.key) return
+  if (!selectedKey.value.key) return;
   const keyIndex = matrixPositionToIndex({
     pos: selectedKey.value.key,
     matrixSize: keyLayout.value.info.matrix,

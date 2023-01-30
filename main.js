@@ -132,8 +132,9 @@ const handleKeymapSave = (jsondata) => {
   let pythonImports = "";
   let kmkAddons = "";
   let codeblock = "";
+  const pogConfig = data.config.configContents;
   // testing encoder enable
-  if (true) {
+  if (pogConfig.encoders && pogConfig.encoders.length !== 0) {
     pythonImports +=
       "\nfrom kmk.modules.layers import Layers\n" +
       "from kmk.modules.encoder import EncoderHandler\nfrom kmk.extensions.media_keys import MediaKeys\n";
