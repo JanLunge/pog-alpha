@@ -133,22 +133,50 @@ const handleKeymapSave = (jsondata) => {
   let kmkAddons = "";
   let codeblock = "";
   const pogConfig = data.config.configContents;
+  //layers
+  if (true) {
+    pythonImports += "\nfrom kmk.modules.layers import Layers\n";
+    kmkAddons += "\nkeyboard.modules.append(Layers())\n";
+  }
+
+  //media keys
+  if (true) {
+    pythonImports += "\nfrom kmk.extensions.media_keys import MediaKeys\n";
+    kmkAddons += "\nkeyboard.extensions.append(MediaKeys())\n";
+  }
   // testing encoder enable
   if (pogConfig.encoders && pogConfig.encoders.length !== 0) {
     pythonImports +=
       "\nfrom kmk.modules.layers import Layers\n" +
-      "from kmk.modules.encoder import EncoderHandler\nfrom kmk.extensions.media_keys import MediaKeys\n";
+      "from kmk.modules.encoder import EncoderHandler\n";
     kmkAddons +=
       "\nlayers = Layers()\n" +
       "encoder_handler = EncoderHandler()\n" +
-      "keyboard.modules = [layers, encoder_handler]\nkeyboard.extensions.append(MediaKeys())\n";
+      "keyboard.modules = [layers, encoder_handler]\n";
+
+    let encoderPins = "";
+    pogConfig.encoders.forEach((encoder) => {
+      encoderPins += `(board.${encoder.pad_a}, board.${encoder.pad_b}, None,),`;
+    });
+
+    let encoderKeymap = "";
+    // keymap: [layer[encoder[keys]]
+    pogConfig.encoderKeymap.forEach((layer) => {
+      encoderKeymap += "(";
+      layer.forEach((encoder) => {
+        encoderKeymap += `(${encoder.join(",")},),`;
+      });
+      encoderKeymap += "),\n";
+    });
+
     codeblock +=
       "# Encoder\n" +
       "encoder_handler.pins = (\n" +
-      "    (board.GP13, board.GP14, None,),\n" +
+      encoderPins +
+      "\n" +
       ")\n" +
       "encoder_handler.map = [ \n" +
-      "    (( KC.VOLD, KC.VOLU,),),\n" +
+      encoderKeymap + // layers
       "]\n";
   }
   let keymapString = `print("Starting")
@@ -170,9 +198,9 @@ keyboard = KMKKeyboard()
 ${kmkAddons}
 
 # Cols
-keyboard.col_pins = (${data.colPins.join(", ")})
+keyboard.col_pins = (${data.colPins.map((a) => "board." + a).join(", ")})
 # Rows
-keyboard.row_pins = (${data.rowPins.join(", ")})
+keyboard.row_pins = (${data.rowPins.map((a) => "board." + a).join(", ")})
 # Diode Direction
 keyboard.diode_orientation = DiodeOrientation.${data.diodeDirection}
 

@@ -104,7 +104,7 @@ const keyboardWidth = computed({
 
 const updateKeymapLength = () => {
   // check each layer
-  keymap.value.forEach((layer, index) => {
+  keymap.value.forEach((layer: string[], index: number) => {
     // count keys
     let keyDiffRel = keyboardWidth.value * keyboardHeight.value - layer.length;
     let diffAdd = keyDiffRel > 0;
@@ -198,17 +198,22 @@ const extractData = ({
 
 const reselectKeyboard = async () => {
   const selection = await openFolderModal();
-  if(!selection.path) return
-  selectedKeyboard.value = selection
+  if (!selection.path) return;
+  selectedKeyboard.value = selection;
   console.log(selectedKeyboard.value.path);
-  initSelectedKeyboard()
+  initSelectedKeyboard();
 };
 
 const initSelectedKeyboard = () => {
   // only read from the pog.json by default
 
   // legacy: set matrix size
-  if (!selectedKeyboard.value || !selectedKeyboard.value.configContents || !selectedConfig.value) return;
+  if (
+    !selectedKeyboard.value ||
+    !selectedKeyboard.value.configContents ||
+    !selectedConfig.value
+  )
+    return;
   rowPins.value = selectedKeyboard.value.configContents.pins.rows;
   colPins.value = selectedKeyboard.value.configContents.pins.cols;
   if (!keyLayout.value.info) keyLayout.value.info = { matrix: [] };

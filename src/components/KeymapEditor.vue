@@ -5,7 +5,7 @@
       <div
         class="tab"
         :class="{ 'tab-active': index === selectedLayer }"
-        v-for="(layer, index) in keymap"
+        v-for="(_layer, index) in keymap"
         @click="selectedLayer = index"
       >
         {{ index }}
@@ -61,7 +61,7 @@ const addLayer = () => {
   tmpKeymap.fill("KC.TRNS");
   (keymap.value as any).push(tmpKeymap);
   // if needed also add an encoder layer
-  if (!selectedConfig.value) return;
+  if (!selectedConfig.value || !selectedConfig.value.encoders) return;
   const encoderCount = selectedConfig.value.encoders.length;
   if (encoderCount !== 0) {
     selectedConfig.value.encoderKeymap.push(

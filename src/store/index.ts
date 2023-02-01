@@ -50,7 +50,17 @@ export const selectedConfig = computed({
 export const selectedVariants = ref<number[]>([]);
 export const layoutVariants = ref<(string | string[])[]>([]);
 
-export const keymap = ref<(string | undefined)[][]>([["KC.TRNS", "KC.TRNS"]]);
+export const keymap = computed({
+  get(){
+    if (!selectedConfig.value) return undefined
+    return selectedConfig.value.currentKeymap
+  },
+  set(newVal:any){
+    if (!selectedConfig.value) return undefined;
+    selectedConfig.value.currentKeymap = newVal
+  }
+})
+//ref<(string | undefined)[][]>([["KC.TRNS", "KC.TRNS"]]);
 export const keyLayout = ref<{
   info: { matrix: number[] };
   keys: any[];

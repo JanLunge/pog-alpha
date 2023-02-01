@@ -270,6 +270,25 @@
       </div>
     </div>
   </div>
+  <div class="flex key-chooser" v-if="category === 'app'">
+    <div class="bonus">
+      <div class="key" @click="setKey('KC.MPLY')">Play/Pause</div>
+      <div class="key" @click="setKey('KC.MUTE')">Mute</div>
+      <div class="key" @click="setKey('KC.VOLD')">Volume Down</div>
+      <div class="key" @click="setKey('KC.VOLU')">Volume Up</div>
+      <div class="key" @click="setKey('KC.MFFD')">next track (OSX)</div>
+      <div class="key" @click="setKey('KC.MRWD')">prev track (OSX)</div>
+
+      <div class="key" @click="setKey('KC.MNXT')">next track (windows)</div>
+      <div class="key" @click="setKey('KC.MPRV')">prev track (windows)</div>
+      <div class="key" @click="setKey('KC.MSTP')">stop track (windows)</div>
+
+      <div class="key" @click="setKey('KC.BRIU')">brightness up</div>
+      <div class="key" @click="setKey('KC.BRID')">brightness down</div>
+
+      <div class="key" @click="setKey('KC.EJCT')">eject (OSX)</div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts" setup>

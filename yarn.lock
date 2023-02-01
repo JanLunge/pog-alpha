@@ -1722,7 +1722,7 @@ electron-to-chromium@^1.4.251:
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.284.tgz#61046d1e4cab3a25238f6bf7413795270f125592"
   integrity sha512-M8WEXFuKXMYMVr45fo8mq0wUrrJHheiKZf6BArTKk9ZBYCKJEOU5H8cdWgDT+qCVZf7Na4lVUaZsA+h6uA9+PA==
 
-electron@*, electron@^22.0.0:
+electron@*:
   version "22.0.0"
   resolved "https://registry.yarnpkg.com/electron/-/electron-22.0.0.tgz#ef84ab9cf23aa3f8c2f42a1e8e000ad7fd941058"
   integrity sha512-cgRc4wjyM+81A0E8UGv1HNJjL1HBI5cWNh/DUIjzYvoUuiEM0SS0hAH/zaFQ18xOz2ced6Yih8SybpOiOYJhdg==
@@ -1737,6 +1737,15 @@ electron@^21.0.1:
   integrity sha512-2a9l8mUQlzXH/9WZrGYDJTyJOliLKbmEuCrQ8bfX1McAQOmI6PDQxfHV4qFUtyCDUp5SHrq5nuvg0c1pIkDBhg==
   dependencies:
     "@electron/get" "^1.14.1"
+    "@types/node" "^16.11.26"
+    extract-zip "^2.0.1"
+
+electron@^22.2.0:
+  version "22.2.0"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-22.2.0.tgz#1aa321415d8b8021a4b0807641f0ad56028feaf5"
+  integrity sha512-puRZSF2vWJ4pz3oetL5Td8LcuivTWz3MoAk/gjImHSN1B/2VJNEQlw1jGdkte+ppid2craOswE2lmCOZ7SwF1g==
+  dependencies:
+    "@electron/get" "^2.0.0"
     "@types/node" "^16.11.26"
     extract-zip "^2.0.1"
 

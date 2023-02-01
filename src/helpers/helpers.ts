@@ -20,8 +20,8 @@ const formatMatrixFromLabel = (label: string): number[] | false => {
 
 export const cleanupKeymap = () => {
   if (!Array.isArray(keymap.value)) keymap.value = [];
-  const filledKeymap = keymap.value.map((layer) => {
-    const tmpLayer = layer.map((key) => {
+  const filledKeymap = keymap.value.map((layer: any[]) => {
+    const tmpLayer = layer.map((key: string | undefined) => {
       // replace empty keys with KC.TRNS
       if (!key) return "KC.TRNS";
       return key;
