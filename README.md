@@ -38,3 +38,4 @@ then to package the application run
 - [ ] don't overwrite everything in code.py || place codeblocks somewhere safe || use injection points from the pog.json
 - [ ] adjust keymap when matrix changes
 - [ ] handle filbert code.py parse error
+- [ ] dragging keys on the layout editor

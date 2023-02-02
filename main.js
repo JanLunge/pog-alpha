@@ -8,10 +8,10 @@ const { shell } = require("electron");
 let keyboardPath = ""; // uses no slash at the end
 let win;
 const appDir = app.getPath("appData") + "/pog/";
-const {
-  default: installExtension,
-  VUEJS3_DEVTOOLS,
-} = require("electron-devtools-installer");
+// const {
+//   default: installExtension,
+//   VUEJS3_DEVTOOLS,
+// } = require("electron-devtools-installer");
 // download kmk and copy it to the keyboard
 function downloadFile(file_url, targetPath) {
   if (!fs.existsSync(appDir)) {
@@ -30,8 +30,8 @@ function downloadFile(file_url, targetPath) {
     .get(file_url)
     .on("response", (data) => {
       // Change the total bytes value to get progress later.
-      total_bytes = parseInt(data.headers["content-length"]);
-      // console.log('updated total', total_bytes, data.headers)
+      total_bytes = parseInt(data.headers["content-length"]) || 1028312;
+      console.log('updated total', total_bytes, data.headers, data.statusCode)
     })
     .on("data", (chunk) => {
       // Update the received bytes
@@ -261,9 +261,9 @@ function createWindow() {
 }
 const scanForKeyboards = () => {};
 app.whenReady().then(() => {
-  installExtension(VUEJS3_DEVTOOLS)
-    .then((name) => console.log(`Added Extension:  ${name}`))
-    .catch((err) => console.log("An error occurred: ", err));
+  // installExtension(VUEJS3_DEVTOOLS)
+  //   .then((name) => console.log(`Added Extension:  ${name}`))
+  //   .catch((err) => console.log("An error occurred: ", err));
   ipcMain.handle("dialog:openFile", handleFileOpen);
   ipcMain.handle("updateLocalKMKcopy", updateLocalKMKcopy);
   // ipcMain.handle("saveKeymap", handleKeymapSave);

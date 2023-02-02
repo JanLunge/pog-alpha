@@ -4,7 +4,7 @@
     class="grid grid-cols-2 items-center gap-4 h-12"
   >
     <p class="text-right">
-      {{ variant[0] }}
+      {{ variantName }}
     </p>
     <select
       @change="selectMultiVariant"
@@ -21,7 +21,7 @@
   </div>
   <div v-else class="grid grid-cols-2 items-center gap-4 h-12">
     <p class="text-right">
-      {{ variant }}
+      <input v-model="variantName"  class="input input-sm input-bordered"/>
     </p>
     <div class="flex gap-4">
       <input
@@ -35,8 +35,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
-import { selectedVariants } from "@/store";
+import { computed, ref } from "vue";
+import {selectedConfig, selectedVariants} from "@/store";
 
 const props = defineProps(["variant", "index"]);
 const selectedOption = ref(0);
@@ -59,6 +59,18 @@ const selectVariant = ({
 }) => {
   selectedVariants.value[layout] = variant;
 };
+
+const variantName = computed({
+  get() {
+    if (Array.isArray(props.variant)) return props.variant[0];
+    return props.variant;
+  },
+  set(newVal) {
+    if (Array.isArray(props.variant)) props.variant[0] = newVal;
+    if(selectedConfig.value)
+    selectedConfig.value.layouts.labels[props.index] = newVal
+  },
+});
 </script>
 
 <style lang="scss" scoped></style>

@@ -1,6 +1,6 @@
 import { ref } from "vue";
 import JSON5 from "json5";
-import { keymap, selectedKeyboard } from "@/store";
+import {keymap, selectedConfig, selectedKeyboard} from "@/store";
 export const matrixPositionToIndex = ({
   pos,
   matrixSize,
@@ -19,6 +19,13 @@ const formatMatrixFromLabel = (label: string): number[] | false => {
 };
 
 export const cleanupKeymap = () => {
+  if(!selectedConfig.value) return
+  if( !selectedConfig.value.currentKeymap ){
+    selectedConfig.value.currentKeymap = [[]]
+  }
+  if( selectedConfig.value.currentKeymap.length === 0 ){
+    selectedConfig.value.currentKeymap = [[]]
+  }
   if (!Array.isArray(keymap.value)) keymap.value = [];
   const filledKeymap = keymap.value.map((layer: any[]) => {
     const tmpLayer = layer.map((key: string | undefined) => {

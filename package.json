@@ -10,7 +10,7 @@
     "icon": "./build/icon.png",
     "mac": {
       "category": "productivity"
-     }
+    }
   },
   "files": [
     "package.json",
@@ -28,10 +28,12 @@
     "electron:start": "electron .",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "pack": "electron-builder --dir",
-    "dist": "yarn build && NODE_ENV=production electron-builder"
+    "dist": "yarn build && NODE_ENV=production electron-builder",
+    "devtools": "./node_modules/.bin/vue-devtools"
   },
   "dependencies": {
-    "@vue/devtools": "^6.4.5",
+    "@vue/devtools": "^6.5.0",
+    "@vueuse/core": "^9.12.0",
     "autoprefixer": "^10.4.13",
     "daisyui": "^2.45.0",
     "decompress": "^4.2.1",
@@ -45,7 +47,7 @@
     "shell": "^0.5.1",
     "slice-lines": "^1.0.3",
     "tailwindcss": "^3.2.4",
-    "vue": "^3.2.45",
+    "vue": "^3.2.47",
     "vue-router": "^4.1.6"
   },
   "devDependencies": {

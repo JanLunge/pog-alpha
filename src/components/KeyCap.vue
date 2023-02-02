@@ -6,6 +6,8 @@
       left: keyData.x * (baseKeyWidth + keyGap) + 'px',
       top: keyData.y * (baseKeyWidth + keyGap) + 'px',
       width: keyWidth + 'px',
+      transform: `rotate(${keyData.r}deg)`,
+      transformOrigin: rotationOrigin
     }"
   >
     <div
@@ -89,22 +91,19 @@
 import { computed, ref, watch } from "vue";
 import {keymap, selectedConfig, selectedKey, selectedLayer, selectedVariants} from "@/store";
 
-const props = defineProps(["keyData"]);
+const props = defineProps(["keyData", "keyIndex", 'mode']);
 const emit = defineEmits(["selected"]);
 
 const keyGap = 4;
 // hide normal labels and show the keymap thing
 const action = computed(() => {
-  let position = props.keyData.matrix; // [0,0] // row, col
-  if (!position) return "";
-  let indexes = position;
+  if(props.mode === 'layout') return //String(props.keyData.matrix)
+  if (props.keyData.matrix.length !== 2) return "";
   if (!selectedConfig.value) return "error";
   const matrixWidth = selectedConfig.value.matrix.cols;
   // console.log(props.keyLayout, matrixWidth);
-  let keyIndex = Number(indexes[0]) * matrixWidth + Number(indexes[1]);
-  if (indexes.length === 2) {
-    // console.log("keyindex", keyIndex);
-  }
+  let keyIndex = Number(props.keyData.matrix[0]) * matrixWidth + Number(props.keyData.matrix[1]);
+  if(!keymap.value[selectedLayer.value]) return "l missing"
   let keyCode = keymap.value[selectedLayer.value][keyIndex]
   // resolve readable character
   if(!keyCode || keyCode === "KC.TRNS") return "▽"
@@ -161,6 +160,7 @@ const keyHeight2 = computed(() => {
   );
 });
 const hasArguments = computed(() => {
+  if(!action.value) return false
   return action.value.includes(")");
 });
 const keyTopWidth = computed(() => {
@@ -192,7 +192,13 @@ const keyTopHeight2 = computed(() => {
   );
 });
 const mainLabel = computed(() => {
-  if (!hasArguments.value && action.value.startsWith("KC.")) {
+  if(props.mode ==='layout'){
+    return String(props.keyData.matrix)
+  }
+  if(!action.value){
+    return ""
+  }
+  if (!hasArguments.value&& action.value.startsWith("KC.")) {
     return action.value.split(".")[1];
   } else if (hasArguments.value) {
     return action.value.split("(")[0];
@@ -216,12 +222,12 @@ const argsSelected = ref(false);
 const bgClick = () => {
   mainSelected.value = true;
   argsSelected.value = false;
-  emit("selected", { key: props.keyData.matrix, args: argsSelected.value });
+  emit("selected", { key: props.keyData.matrix, args: argsSelected.value, keyIndex: props.keyIndex });
 };
 const argClick = () => {
   argsSelected.value = true;
   mainSelected.value = false;
-  emit("selected", { key: props.keyData.matrix, args: argsSelected.value });
+  emit("selected", { key: props.keyData.matrix, args: argsSelected.value, keyIndex: props.keyIndex });
 };
 
 watch(
@@ -233,6 +239,13 @@ watch(
     }
   }
 );
+
+const rotationOrigin = computed(() => {
+  if(!props.keyData.rx ||  !props.keyData.ry) return "0 0"
+  let x = props.keyData.rx * 58 - props.keyData.x * (baseKeyWidth.value + keyGap)
+  let y = props.keyData.ry * 58 - props.keyData.y * (baseKeyWidth.value + keyGap)
+  return `${x}px ${y}px` // return "xpx ypx"
+})
 </script>
 
 <style lang="scss" scoped>

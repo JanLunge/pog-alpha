@@ -9,7 +9,7 @@
     class="btn btn-sm btn-primary"
     :class="{ 'btn-disabled': !pinsCompleted }"
     @click="$emit('next')"
-    v-if="$route.name !== 'pins'"
+    v-if="initialSetup"
   >
     Next
   </div>
@@ -111,6 +111,7 @@
 <script lang="ts" setup>
 import { computed, ref } from "vue";
 import { selectedConfig, selectedKeyboard } from "@/store";
+import router from "@/router";
 if (selectedConfig.value) {
   if (!selectedConfig.value.pins) {
     selectedConfig.value.pins = {
@@ -130,6 +131,10 @@ const pinsCompleted = computed(() => {
   if (selectedConfig.value.pins.rows.includes("")) return false;
   return true;
 });
+
+const initialSetup = computed(()=>{
+  return router.currentRoute.value.name !== 'pins'
+})
 </script>
 
 <style lang="scss" scoped>

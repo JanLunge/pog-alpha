@@ -33,7 +33,7 @@
         class="radial-progress bg-primary text-primary-content border-4 border-primary"
         :style="{ '--value': progress }"
       >
-        {{ progress }}%
+        {{ progress === NaN ? "Done" : progress  }}%
       </div>
     </div>
   </div>
@@ -56,7 +56,8 @@ const updateKMK = async () => {
     // don't go back from done
     if (kmkInstallState.value !== "done") {
       kmkInstallState.value = value.state;
-      progress.value = value.progress;
+      console.log('progress',value.progress)
+      progress.value = Math.round(value.progress);
       if (value.state === "done") {
         selectedKeyboard.value.hasKmk = true;
       }

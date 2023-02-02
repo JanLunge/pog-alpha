@@ -1,8 +1,9 @@
 import { computed, ref } from "vue";
 
-export const selectedKey = ref<{ key: number[] | undefined; args: boolean }>({
+export const selectedKey = ref<{ key: number[] | undefined; args: boolean, keyIndex: number }>({
   key: undefined,
   args: false,
+  keyIndex: NaN
 });
 export const selectedLayer = ref(0);
 export const selectedKeyboard = ref<{

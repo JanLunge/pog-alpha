@@ -57,6 +57,10 @@ const setKey = (keyCode: string) => {
   keymap.value[selectedLayer.value][keyIndex] = keyCode;
 };
 const addLayer = () => {
+  if (!selectedConfig.value) return
+  if (!keymap.value[0]){
+    keymap.value.push(Array(selectedConfig.value.matrix.cols * selectedConfig.value.matrix.rows).fill("KC.TRNS"))
+  }
   const tmpKeymap = [...keymap.value[0]];
   tmpKeymap.fill("KC.TRNS");
   (keymap.value as any).push(tmpKeymap);

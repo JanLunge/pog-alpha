@@ -16,6 +16,7 @@
       </li>
       <li><router-link to="/keymap">Keymap</router-link></li>
       <li><router-link to="/layout-options">Layout Options</router-link></li>
+      <li><router-link to="/tools">Keyboard Layout</router-link></li>
       <hr class="border-white border-opacity-40" />
       <li><router-link to="/firmware">Firmware</router-link></li>
       <li><router-link to="/matrix">Matrix</router-link></li>
@@ -23,7 +24,6 @@
       <li><router-link to="/layout">Layout</router-link></li>
       <li><router-link to="/raw-keymap">Raw Keymap</router-link></li>
       <li><router-link to="/encoder">Encoder</router-link></li>
-      <li><router-link to="/tools">Tools</router-link></li>
     </ul>
     <div class="px-4 pt-8 flex-1 overflow-x-auto h-screen">
       <h1 class="text-5xl font-bold text-center mb-8">Keyboard Config</h1>
@@ -226,6 +226,7 @@ const initSelectedKeyboard = () => {
   });
   keyLayout.value.keys = selectedConfig.value.layouts.keymap;
   keymap.value = selectedConfig.value.currentKeymap;
+
   cleanupKeymap();
 };
 

@@ -1,6 +1,6 @@
 <template>
   <div v-if="selectedConfig">
-    <p>Encoder setup is currently WIP (expect it to break)</p>
+    <p>Encoder setup is currently WIP</p>
     <div
       v-for="(encoder, eindex) in selectedConfig.encoders"
       class="my-2 p-4 bg-base-300 grid gap-4"

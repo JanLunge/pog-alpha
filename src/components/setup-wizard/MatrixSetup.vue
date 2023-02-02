@@ -18,13 +18,17 @@
         placeholder="1"
         input-type="number"
         label="Matrix Width"
+        :min="0"
         v-model="selectedConfig.matrix.cols"
+        @input="checkMatrix"
       ></InputLabel>
       <InputLabel
         placeholder="1"
         input-type="number"
         label="Matrix Height"
+        :min="0"
         v-model="selectedConfig.matrix.rows"
+        @input="checkMatrix"
       ></InputLabel>
     </div>
     <div
@@ -53,8 +57,8 @@ if(!selectedConfig.value){
 if (selectedConfig.value) {
   if (!selectedConfig.value.matrix) {
     selectedConfig.value.matrix = {
-      rows: 0,
-      cols: 0,
+      rows: 1,
+      cols: 1,
       diodeDirection: "ROW2COL",
     };
   }
@@ -67,6 +71,11 @@ const matrixEmpty = computed(() => {
     selectedConfig.value.matrix.diodeDirection !== undefined
   );
 });
+const checkMatrix = () => {
+  if(!selectedConfig.value) return
+  if(selectedConfig.value.matrix.cols < 0 ) selectedConfig.value.matrix.cols = 0
+  if(selectedConfig.value.matrix.rows < 0 ) selectedConfig.value.matrix.rows = 0
+}
 </script>
 
 <style lang="scss" scoped>
