@@ -15,6 +15,29 @@
     </div>
   </div>
   <keyboard-layout :key-layout="keyLayout" :keymap="keymap"></keyboard-layout>
+  <div v-if="[...selectedKeys].length !== 0" class="my-4">
+    <p>Keycode Options for Selected Key(s)</p>
+    <div class="flex gap-2">
+      <select class="select select-bordered" v-model="keycodeModeForSelection">
+        <!-- simple will just inline the keycode -->
+        <option value="simple">simple</option>
+        <!-- other options will create a separately linked keycode -->
+        <option value="sequence">sequence</option>
+        <option value="tapdance">tapdance</option>
+        <option value="combo">combo</option>
+        <option value="custom">custom</option>
+      </select>
+      <div>
+        <div v-if="keycodeModeForSelection === 'simple'">
+          select a key from the picker below to change it
+        </div>
+        <div v-if="keycodeModeForSelection !== 'simple'">
+          <span>set custom keycode</span>
+          <input type="text" class="input input-bordered" v-model="tmpKeycode"/>
+        </div>
+      </div>
+    </div>
+  </div>
   <KeyPicker @setKey="setKey"></KeyPicker>
 </template>
 
@@ -28,9 +51,15 @@ import {
 } from "@/store";
 import KeyboardLayout from "@/components/KeyboardLayout.vue";
 import KeyPicker from "@/components/setup-wizard/KeyPicker.vue";
-import { matrixPositionToIndex } from "@/helpers/helpers";
+import { matrixPositionToIndex, selectNextKey } from "@/helpers/helpers";
+import { ref } from "vue";
 
+const tmpKeycode = ref("")
 selectedKeys.value = new Set();
+
+const keycodeModeForSelection = ref<
+  "simple" | "combo" | "sequence" | "custom" | "tapdance"
+>("simple");
 const setKey = (keyCode: string) => {
   // only update key if just one is selected
   if (!selectedConfig.value) return;
@@ -60,6 +89,10 @@ const setKey = (keyCode: string) => {
     }
     keymap.value[selectedLayer.value][keyIndex] = keyCode;
   });
+  // if one key is selected select the next
+  if ([...selectedKeys.value].length === 1) {
+    selectNextKey();
+  }
 };
 const addLayer = () => {
   if (!selectedConfig.value) return;
@@ -83,6 +116,9 @@ const addLayer = () => {
   }
 };
 const removeLayer = () => {
+  if (selectedLayer.value === keymap.value.length - 1) {
+    selectedLayer.value = keymap.value.length - 2;
+  }
   if (keymap.value.length <= 1) return;
   keymap.value.pop();
   // if needed also add an encoder layer

@@ -85,7 +85,7 @@
 </template>
 
 <script lang="ts" setup>
-import { cleanupKeymap, KleToPog } from "@/helpers/helpers";
+import {cleanupKeymap, KleToPog, selectNextKey, selectPrevKey} from "@/helpers/helpers";
 import { computed, onMounted, ref } from "vue";
 import router from "@/router";
 import {
@@ -229,8 +229,7 @@ onMounted(() => {
     e.preventDefault();
 
     selectedKeys.value.forEach((keyIndex) => {
-      tmpLayout.value[keyIndex].y =
-        tmpLayout.value[keyIndex].y + 0.25;
+      tmpLayout.value[keyIndex].y = tmpLayout.value[keyIndex].y + 0.25;
     });
   });
   onKeyStroke("ArrowUp", (e) => {
@@ -241,9 +240,9 @@ onMounted(() => {
   });
   onKeyStroke("ArrowLeft", (e) => {
     e.preventDefault();
-    if (e.altKey && selectedKeys.value.length === 1) {
+    if (e.altKey && [...selectedKeys.value].length === 1) {
       // alt select next key
-      selectedKeys.value = [Math.max(selectedKeys.value[0] - 1, 0)];
+      selectPrevKey()
       return;
     }
     selectedKeys.value.forEach((keyIndex) => {
@@ -252,11 +251,9 @@ onMounted(() => {
   });
   onKeyStroke("ArrowRight", (e) => {
     e.preventDefault();
-    if (e.altKey && selectedKeys.value.length === 1) {
+    if (e.altKey && [...selectedKeys.value].length === 1) {
       // alt select next key
-      selectedKeys.value = [
-        Math.min(selectedKeys.value[0] + 1, keycount.value),
-      ];
+      selectNextKey()
       return;
     }
     selectedKeys.value.forEach((keyIndex) => {

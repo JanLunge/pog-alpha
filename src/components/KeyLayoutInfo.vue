@@ -170,13 +170,13 @@ const updateKey = () => {
   selectedKeys.value.forEach((keyIndex) => {
     // only modify if a field has a value
     // validate all fields and remove things that are set to default
-    if (tmpKey.value.x) props.layout[keyIndex].x = Number(tmpKey.value.x);
-    if (tmpKey.value.y) props.layout[keyIndex].y = Number(tmpKey.value.y);
-    if (tmpKey.value.w) props.layout[keyIndex].w = Number(tmpKey.value.w);
-    if (tmpKey.value.h) props.layout[keyIndex].h = Number(tmpKey.value.h);
-    if (tmpKey.value.r) props.layout[keyIndex].r = Number(tmpKey.value.r);
-    if (tmpKey.value.rx) props.layout[keyIndex].rx = Number(tmpKey.value.rx);
-    if (tmpKey.value.ry) props.layout[keyIndex].ry = Number(tmpKey.value.ry);
+    if (tmpKey.value.x !== "") props.layout[keyIndex].x = Number(tmpKey.value.x);
+    if (tmpKey.value.y !== "") props.layout[keyIndex].y = Number(tmpKey.value.y);
+    if (tmpKey.value.w !== "") props.layout[keyIndex].w = Number(tmpKey.value.w);
+    if (tmpKey.value.h !== "") props.layout[keyIndex].h = Number(tmpKey.value.h);
+    if (tmpKey.value.r !== "") props.layout[keyIndex].r = Number(tmpKey.value.r);
+    if (tmpKey.value.rx !== "") props.layout[keyIndex].rx = Number(tmpKey.value.rx);
+    if (tmpKey.value.ry !== "") props.layout[keyIndex].ry = Number(tmpKey.value.ry);
 
     // if (
     //   (tmpKey.value.matrix &&

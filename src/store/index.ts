@@ -74,7 +74,7 @@ export const keymap = computed({
 });
 export const keycount = computed(() => {
   if (!selectedConfig.value) return 0;
-  return selectedConfig.value?.layouts.keymap.length + 1;
+  return selectedConfig.value?.layouts.keymap.length ;
 });
 
 //ref<(string | undefined)[][]>([["KC.TRNS", "KC.TRNS"]]);

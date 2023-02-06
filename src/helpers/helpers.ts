@@ -1,6 +1,6 @@
 import { ref } from "vue";
 import JSON5 from "json5";
-import { keymap, selectedConfig } from "@/store";
+import {keycount, keymap, selectedConfig, selectedKeys} from "@/store";
 export const matrixPositionToIndex = ({
   pos,
   matrixSize,
@@ -177,3 +177,14 @@ export const KleToPog = (kleString: string) => {
   console.log("created layout", keyboardInfo.value);
   return keyboardInfo.value.keys;
 };
+
+export const selectNextKey = () => {
+  selectedKeys.value = new Set([
+    Math.min([...selectedKeys.value][0] + 1, keycount.value - 1),
+  ]);
+}
+export const selectPrevKey = () => {
+  selectedKeys.value = new Set([
+    Math.max([...selectedKeys.value][0] - 1, 0),
+  ]);
+}

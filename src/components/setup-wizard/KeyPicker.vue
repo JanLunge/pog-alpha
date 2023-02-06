@@ -270,6 +270,16 @@
       </div>
     </div>
   </div>
+
+  <div class="flex key-chooser" v-if="category === 'kmk'">
+    <div class="bonus">
+
+      <div class="key" @click="setKey('KC.RESET')">Reset</div>
+      <div class="key" @click="setKey('KC.RELOAD')">Reload</div>
+      <div class="key" @click="setKey('KC.DEBUG')">Debug</div>
+      <div class="key" @click="setKey('KC.BKDL')">BKDL</div>
+    </div>
+  </div>
   <div class="flex key-chooser" v-if="category === 'app'">
     <div class="bonus">
       <div class="key" @click="setKey('KC.MPLY')">Play/Pause</div>
