@@ -21,7 +21,7 @@
   </div>
   <div v-else class="grid grid-cols-2 items-center gap-4 h-12">
     <p class="text-right">
-      <input v-model="variantName"  class="input input-sm input-bordered"/>
+      <input v-model="variantName" class="input input-sm input-bordered" />
     </p>
     <div class="flex gap-4">
       <input
@@ -36,14 +36,16 @@
 
 <script lang="ts" setup>
 import { computed, ref } from "vue";
-import {selectedConfig, selectedVariants} from "@/store";
+import { selectedConfig, selectedVariants } from "@/store";
 
 const props = defineProps(["variant", "index"]);
 const selectedOption = ref(0);
 const selectedBool = ref(false);
-
-selectedBool.value = selectedVariants.value[props.index] === 1 ? true : false;
-selectedOption.value = selectedVariants.value[props.index];
+if (selectedConfig.value && selectedConfig.value.selectedVariants) {
+  selectedBool.value =
+    selectedConfig.value.selectedVariants[props.index] === 1;
+  selectedOption.value = selectedConfig.value.selectedVariants[props.index];
+}
 const selectMultiVariant = () => {
   selectVariant({ layout: props.index, variant: selectedOption.value });
 };
@@ -57,7 +59,9 @@ const selectVariant = ({
   layout: number;
   variant: number;
 }) => {
-  selectedVariants.value[layout] = variant;
+  if (!selectedConfig.value) return;
+  if (!selectedConfig.value.selectedVariants) selectedConfig.value.selectedVariants = []
+  selectedConfig.value.selectedVariants[layout] = variant;
 };
 
 const variantName = computed({
@@ -67,8 +71,8 @@ const variantName = computed({
   },
   set(newVal) {
     if (Array.isArray(props.variant)) props.variant[0] = newVal;
-    if(selectedConfig.value)
-    selectedConfig.value.layouts.labels[props.index] = newVal
+    if (selectedConfig.value)
+      selectedConfig.value.layouts.labels[props.index] = newVal;
   },
 });
 </script>

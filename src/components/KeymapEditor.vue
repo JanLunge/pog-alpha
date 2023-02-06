@@ -23,43 +23,52 @@ import {
   keyLayout,
   keymap,
   selectedConfig,
-  selectedKey,
+  selectedKeys,
   selectedLayer,
 } from "@/store";
 import KeyboardLayout from "@/components/KeyboardLayout.vue";
 import KeyPicker from "@/components/setup-wizard/KeyPicker.vue";
 import { matrixPositionToIndex } from "@/helpers/helpers";
 
+selectedKeys.value = new Set();
 const setKey = (keyCode: string) => {
-  if (!selectedKey.value.key) return;
-  const keyIndex = matrixPositionToIndex({
-    pos: selectedKey.value.key,
-    matrixSize: keyLayout.value.info.matrix,
-  });
-  console.log("setting ", selectedKey.value, "to", keyCode, "at", keyIndex);
-  const currentKeyAction = keymap.value[selectedLayer.value][keyIndex];
-  if (!keyCode.includes("(")) {
-    // could set this as arg in a key
-    if (
-      currentKeyAction &&
-      currentKeyAction.includes("(") &&
-      selectedKey.value.args
-    ) {
-      // Validate for what args this function takes
-      // only set this as arg
-      // TODO: handle multiple args
-      let action = currentKeyAction.split("(")[0].replace(")", "");
-      keymap.value[selectedLayer.value][keyIndex] =
-        action + "(" + keyCode + ")";
-      return;
+  // only update key if just one is selected
+  if (!selectedConfig.value) return;
+  selectedKeys.value.forEach((index) => {
+    if (!selectedConfig.value) return;
+    const keyIndex = matrixPositionToIndex({
+      pos: selectedConfig.value.layouts.keymap[index].matrix,
+      matrixSize: keyLayout.value.info.matrix,
+    });
+    console.log("setting ", [...selectedKeys.value][0], "to", keyCode, "at");
+    const currentKeyAction = keymap.value[selectedLayer.value][keyIndex];
+    if (!keyCode.includes("(")) {
+      // TODO: could set this as arg in a key
+      // if (
+      //   currentKeyAction &&
+      //   currentKeyAction.includes("(") &&
+      //   selectedKey.value.args
+      // ) {
+      //   // Validate for what args this function takes
+      //   // only set this as arg
+      //   // TODO: handle multiple args
+      //   let action = currentKeyAction.split("(")[0].replace(")", "");
+      //   keymap.value[selectedLayer.value][keyIndex] =
+      //     action + "(" + keyCode + ")";
+      //   return;
+      // }
     }
-  }
-  keymap.value[selectedLayer.value][keyIndex] = keyCode;
+    keymap.value[selectedLayer.value][keyIndex] = keyCode;
+  });
 };
 const addLayer = () => {
-  if (!selectedConfig.value) return
-  if (!keymap.value[0]){
-    keymap.value.push(Array(selectedConfig.value.matrix.cols * selectedConfig.value.matrix.rows).fill("KC.TRNS"))
+  if (!selectedConfig.value) return;
+  if (!keymap.value[0]) {
+    keymap.value.push(
+      Array(
+        selectedConfig.value.matrix.cols * selectedConfig.value.matrix.rows
+      ).fill("KC.TRNS")
+    );
   }
   const tmpKeymap = [...keymap.value[0]];
   tmpKeymap.fill("KC.TRNS");

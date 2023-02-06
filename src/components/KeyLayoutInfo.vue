@@ -1,5 +1,6 @@
 <template>
-  <p class="font-bold">Key Info for key #{{ selectedKey.keyIndex }}</p>
+  <p class="font-bold">Key Info for key #{{ [...selectedKeys][0] }}</p>
+  <p>selected {{ [...selectedKeys].length }} keys</p>
   <div class="grid gap-2 grid-cols-2 text-right">
     <span>x</span>
     <input
@@ -87,13 +88,26 @@
 </template>
 
 <script lang="ts" setup>
-import { selectedKey } from "@/store";
+import { selectedKey, selectedKeys } from "@/store";
 import { computed, ref, watch } from "vue";
 import { isNumber } from "@vueuse/core";
 
 const props = defineProps(["layout"]);
 
-const tmpKey = ref({
+const tmpKey = ref<{
+  x: number | "";
+  y: number | "";
+  w: number | "";
+  h: number | "";
+  w2: number | "";
+  h2: number | "";
+  d: boolean | "";
+  matrix: (number | "")[];
+  variant: (number | "")[];
+  r: number | "";
+  rx: number | "";
+  ry: number | "";
+}>({
   x: 0,
   y: 0,
   w: 1,
@@ -101,13 +115,12 @@ const tmpKey = ref({
   w2: 0,
   h2: 0,
   d: false,
-  matrix: [NaN, NaN],
-  variant: [NaN, NaN],
+  matrix: ["", ""],
+  variant: ["", ""],
   r: 0,
   rx: 0,
   ry: 0,
 });
-
 // watch(
 //   () => selectedKey.value.keyIndex,
 //   () => {
@@ -119,49 +132,93 @@ const tmpKey = ref({
 //     };
 //   }
 // );
-watch(
-  () => JSON.stringify(props.layout[selectedKey.value.keyIndex]),
-  () => {
-    console.log("key changed");
+
+const updateSelectedKey = () => {
+  if ([...selectedKeys.value].length === 1) {
+    const keyToLoad = JSON.parse(JSON.stringify(props.layout[[...selectedKeys.value][0]]))
     tmpKey.value = {
-      matrix: [NaN, NaN],
-      variant: [NaN, NaN],
-      ...props.layout[selectedKey.value.keyIndex],
+      matrix: ["", ""],
+      variant: ["", ""],
+      ...keyToLoad,
+    };
+  } else {
+    // set every property that has different values to ""
+    tmpKey.value = {
+      matrix: ["", ""],
+      variant: ["", ""],
+      x: "",
+      y: "",
+      w: "",
+      h: "",
+      w2: "",
+      h2: "",
+      d: "",
+      r: "",
+      rx: "",
+      ry: "",
     };
   }
+};
+
+updateSelectedKey();
+watch(
+  () => [...selectedKeys.value],
+  () => updateSelectedKey()
 );
 
 const updateKey = () => {
-  // validate all fields and remove things that are set to default
-  props.layout[selectedKey.value.keyIndex].x = Number(tmpKey.value.x) || 0;
-  props.layout[selectedKey.value.keyIndex].y = Number(tmpKey.value.y) || 0;
-  props.layout[selectedKey.value.keyIndex].w = Number(tmpKey.value.w) || 1;
-  props.layout[selectedKey.value.keyIndex].h = Number(tmpKey.value.h) || 1;
-  props.layout[selectedKey.value.keyIndex].r = Number(tmpKey.value.r) || 0;
-  props.layout[selectedKey.value.keyIndex].rx = Number(tmpKey.value.rx) || 0;
-  props.layout[selectedKey.value.keyIndex].ry = Number(tmpKey.value.ry) || 0;
+  selectedKeys.value.forEach((keyIndex) => {
+    // only modify if a field has a value
+    // validate all fields and remove things that are set to default
+    if (tmpKey.value.x) props.layout[keyIndex].x = Number(tmpKey.value.x);
+    if (tmpKey.value.y) props.layout[keyIndex].y = Number(tmpKey.value.y);
+    if (tmpKey.value.w) props.layout[keyIndex].w = Number(tmpKey.value.w);
+    if (tmpKey.value.h) props.layout[keyIndex].h = Number(tmpKey.value.h);
+    if (tmpKey.value.r) props.layout[keyIndex].r = Number(tmpKey.value.r);
+    if (tmpKey.value.rx) props.layout[keyIndex].rx = Number(tmpKey.value.rx);
+    if (tmpKey.value.ry) props.layout[keyIndex].ry = Number(tmpKey.value.ry);
 
-  if (
-    tmpKey.value.matrix &&
-    tmpKey.value.matrix.length == 2 &&
-    !isNaN(tmpKey.value.matrix[0]) &&
-    !isNaN(tmpKey.value.matrix[1])
-  )
-    props.layout[selectedKey.value.keyIndex].matrix = tmpKey.value.matrix.map(
-      (a) => {
-        if (a === "NaN") return NaN;
-        return Number(a);
+    // if (
+    //   (tmpKey.value.matrix &&
+    //     tmpKey.value.matrix.length == 2 &&
+    //     tmpKey.value.matrix[0] !== "") ||
+    //   tmpKey.value.matrix[1] !== ""
+    // )
+    //   props.layout[keyIndex].matrix = tmpKey.value.matrix.map(
+    //     (a: string | number) => {
+    //       if (a === "NaN" || a === "") return NaN;
+    //       return Number(a);
+    //     }
+    //   );
+    if (tmpKey.value.matrix && tmpKey.value.matrix[0] !== "") {
+      console.log(
+        "updating matrix 0",
+        tmpKey.value.matrix,
+        props.layout[keyIndex].marix
+      );
+      if (!Array.isArray(props.layout[keyIndex].matrix)) {
+        props.layout[keyIndex].matrix = [Number(tmpKey.value.matrix[0]), NaN];
+      } else {
+        props.layout[keyIndex].matrix[0] = Number(tmpKey.value.matrix[0]);
       }
-    );
-  if (
-    tmpKey.value.variant &&
-    tmpKey.value.variant.length == 2 &&
-    !isNaN(tmpKey.value.variant[0]) &&
-    !isNaN(tmpKey.value.variant[1])
-  )
-    props.layout[selectedKey.value.keyIndex].variant = tmpKey.value.variant.map(
-      (a) => Number(a)
-    );
+      console.log(props.layout[keyIndex].matrix)
+    }
+    if (tmpKey.value.matrix && tmpKey.value.matrix[1] !== "") {
+      if (!props.layout[keyIndex].matrix)
+        props.layout[keyIndex].matrix = [NaN, NaN];
+      props.layout[keyIndex].matrix[1] = Number(tmpKey.value.matrix[1]);
+    }
+    if (tmpKey.value.variant && tmpKey.value.variant[0] !== "") {
+      if (!props.layout[keyIndex].variant)
+        props.layout[keyIndex].variant = [NaN, NaN];
+      props.layout[keyIndex].variant[0] = Number(tmpKey.value.variant[0]);
+    }
+    if (tmpKey.value.variant && tmpKey.value.variant[1] !== "") {
+      if (!props.layout[keyIndex].variant)
+        props.layout[keyIndex].variant = [NaN, NaN];
+      props.layout[keyIndex].variant[1] = Number(tmpKey.value.variant[1]);
+    }
+  });
 };
 
 const matrixValid = computed(() => {

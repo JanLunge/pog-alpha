@@ -1,42 +1,50 @@
 <template>
-  <div
-    class="flex items-center justify-center my-5 relative"
-    id="keyboardlayout-wrapper"
-    @click="deselectKey"
-    :style="{ height: keyboardScale * (keyboardHeight * 58) + 'px' }"
+  <SelectionArea
+    class="container"
+    :options="{ selectables: ['.keycap'] }"
+    :on-move="onMove"
+    :on-start="onStart"
   >
     <div
-      class="relative w-full h-64"
-      id="keyboardlayout"
-      :style="{
-        width: keyboardWidth * 58 + 'px',
-        height: keyboardHeight * 58 + 'px',
-        transform: `scale( ${keyboardScale})`,
-      }"
-      style="transform-origin: center left"
+      class="flex items-center justify-center my-5 relative"
+      id="keyboardlayout-wrapper"
+      :style="{ height: keyboardScale * (keyboardHeight * 58) + 'px' }"
     >
       <div
-        class="rotation-origin-helper"
-        v-if="mode === 'layout' && !isNaN(selectedKey.keyIndex)"
-        :style="{ left: rotationOriginX, top: rotationOriginY }"
-      ></div>
-      <key-cap
-        v-for="(key, keyIndex) in keyLayout.keys"
-        @selected="keyChanged"
-        :key-data="key"
-        :key-index="keyIndex"
-        :mode="mode"
+        class="relative w-full h-64"
+        id="keyboardlayout"
+        :style="{
+          width: keyboardWidth * 58 + 'px',
+          height: keyboardHeight * 58 + 'px',
+          transform: `scale( ${keyboardScale})`,
+        }"
+        style="transform-origin: center left"
       >
-      </key-cap>
+        <div
+          class="rotation-origin-helper"
+          v-if="mode === 'layout' && !isNaN(selectedKey.keyIndex)"
+          :style="{ left: rotationOriginX, top: rotationOriginY }"
+        ></div>
+
+        <key-cap
+          v-for="(key, keyIndex) in keyLayout.keys"
+          @selected="keyChanged"
+          :key-data="key"
+          :key-index="keyIndex"
+          :mode="mode"
+        >
+        </key-cap>
+      </div>
     </div>
-  </div>
-  <div class="h-20"></div>
+  </SelectionArea>
 </template>
 
 <script lang="ts" setup>
 import KeyCap from "@/components/KeyCap.vue";
 import { computed, onMounted, ref } from "vue";
-import { selectedKey } from "@/store";
+import { selectedKey, selectedKeys } from "@/store";
+import { SelectionArea } from "@viselect/vue";
+import type { SelectionEvent } from "@viselect/vue";
 const props = defineProps(["keyLayout", "keymap", "mode"]);
 // mode can be layout or keymap
 
@@ -70,14 +78,21 @@ const keyChanged = ({
   key,
   args,
   keyIndex,
+  added,
 }: {
   key: number[];
   args: boolean;
   keyIndex: number;
+  added: boolean;
 }) => {
-  selectedKey.value.key = key;
-  selectedKey.value.args = args;
-  selectedKey.value.keyIndex = keyIndex;
+  if (added && props.mode === "layout") {
+    selectedKeys.value.add(keyIndex);
+  } else {
+    selectedKeys.value = new Set([keyIndex]);
+  }
+  // selectedKey.value.key = key;
+  // selectedKey.value.args = args;
+  // selectedKey.value.keyIndex = keyIndex;
 };
 const keyboardScale = ref(1);
 const updateScale = () => {
@@ -88,7 +103,6 @@ const updateScale = () => {
       wrapperWidth / (keyboardWidth.value * 58),
       1
     );
-    console.log("transforming to ", keyboardScale.value);
   }
 };
 onMounted(() => {
@@ -110,10 +124,35 @@ const rotationOriginY = computed(() => {
   return `${y}px`; // return "xpx ypx"
 });
 
-const deselectKey = (e: MouseEvent) => {
-  console.log(e);
-  if (e.target && e.target.id === "keyboardlayout-wrapper")
-    selectedKey.value = { keyIndex: NaN, key: [], args: false };
+// const deselectKey = (e: MouseEvent) => {
+//   console.log(e);
+//   if (
+//     e.target &&
+//     (e.target as unknown as { id: string }).id === "keyboardlayout-wrapper"
+//   ) {
+//     selectedKeys.value.clear()
+//     selectedKey.value = { keyIndex: NaN, key: [], args: false };
+//   }
+// };
+const extractIndexes = (els: Element[]): number[] => {
+  return els
+    .map((v) => v.getAttribute("data-index"))
+    .filter(Boolean)
+    .map(Number);
+};
+const onMove = ({
+  store: {
+    changed: { added, removed },
+  },
+}: SelectionEvent) => {
+  extractIndexes(added).forEach((id) => selectedKeys.value.add(id));
+  extractIndexes(removed).forEach((id) => selectedKeys.value.delete(id));
+};
+const onStart = ({ event, selection }: SelectionEvent) => {
+  if (!event?.ctrlKey && !event?.metaKey) {
+    selection.clearSelection();
+    selectedKeys.value.clear();
+  }
 };
 </script>
 
@@ -126,5 +165,18 @@ const deselectKey = (e: MouseEvent) => {
   z-index: 10;
   border-radius: 5px;
   transform: translate(-50%, -50%);
+}
+
+.container {
+  user-select: none;
+  @apply p-4;
+}
+</style>
+<style>
+.selection-area {
+  background: rgba(152, 90, 19,0.2);
+  border: 2px solid rgb(242, 140, 24);
+  border-radius: 0.1em;
+  z-index: 100;
 }
 </style>

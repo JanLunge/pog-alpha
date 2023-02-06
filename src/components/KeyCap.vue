@@ -2,12 +2,15 @@
   <div
     class="keycap"
     v-if="visible"
+    style="user-select: none"
+    :data-index="keyIndex"
     :style="{
       left: keyData.x * (baseKeyWidth + keyGap) + 'px',
       top: keyData.y * (baseKeyWidth + keyGap) + 'px',
       width: keyWidth + 'px',
+      height: keyHeight + 'px',
       transform: `rotate(${keyData.r}deg)`,
-      transformOrigin: rotationOrigin
+      transformOrigin: rotationOrigin,
     }"
   >
     <div
@@ -89,41 +92,48 @@
 
 <script lang="ts" setup>
 import { computed, ref, watch } from "vue";
-import {keymap, selectedConfig, selectedKey, selectedLayer, selectedVariants} from "@/store";
+import {
+  keymap,
+  selectedConfig,
+  selectedKey,
+  selectedLayer,
+  selectedVariants,
+  selectedKeys
+} from "@/store";
 
-const props = defineProps(["keyData", "keyIndex", 'mode']);
+const props = defineProps(["keyData", "keyIndex", "mode"]);
 const emit = defineEmits(["selected"]);
 
 const keyGap = 4;
 // hide normal labels and show the keymap thing
 const action = computed(() => {
-  if(props.mode === 'layout') return //String(props.keyData.matrix)
+  if (props.mode === "layout") return; //String(props.keyData.matrix)
   if (props.keyData.matrix.length !== 2) return "";
   if (!selectedConfig.value) return "error";
   const matrixWidth = selectedConfig.value.matrix.cols;
   // console.log(props.keyLayout, matrixWidth);
-  let keyIndex = Number(props.keyData.matrix[0]) * matrixWidth + Number(props.keyData.matrix[1]);
-  if(!keymap.value[selectedLayer.value]) return "l missing"
-  let keyCode = keymap.value[selectedLayer.value][keyIndex]
+  let keyIndex =
+    Number(props.keyData.matrix[0]) * matrixWidth +
+    Number(props.keyData.matrix[1]);
+  if (!keymap.value[selectedLayer.value]) return "l missing";
+  let keyCode = keymap.value[selectedLayer.value][keyIndex];
   // resolve readable character
-  if(!keyCode || keyCode === "KC.TRNS") return "▽"
+  if (!keyCode || keyCode === "KC.TRNS") return "▽";
   return keyCode;
 });
 
 const visible = computed(() => {
-  if (props.keyData.d) {
+  // hide decal keys
+  if (props.keyData.d || !selectedConfig.value) {
     return false;
   }
+  // show correct variant
   let variant: number[] = props.keyData.variant;
-  if (variant) {
-    // if (variant[0] === 3) {
-    //   console.log(variant[0], selectedVariants.value[variant[0]].value);
-    // }
-    if(variant.length !== 2) return false
-    return selectedVariants.value[variant[0]] == variant[1];
-    // return variant[1] === 0
+  if (variant && selectedConfig.value.selectedVariants) {
+    if (variant.length !== 2) return false;
+    return selectedConfig.value.selectedVariants[variant[0]] == variant[1];
   }
-
+  // show keys that don't have variant
   return true;
 });
 
@@ -160,7 +170,7 @@ const keyHeight2 = computed(() => {
   );
 });
 const hasArguments = computed(() => {
-  if(!action.value) return false
+  if (!action.value) return false;
   return action.value.includes(")");
 });
 const keyTopWidth = computed(() => {
@@ -192,13 +202,13 @@ const keyTopHeight2 = computed(() => {
   );
 });
 const mainLabel = computed(() => {
-  if(props.mode ==='layout'){
-    return String(props.keyData.matrix)
+  if (props.mode === "layout") {
+    return String(props.keyData.matrix);
   }
-  if(!action.value){
-    return ""
+  if (!action.value) {
+    return "";
   }
-  if (!hasArguments.value&& action.value.startsWith("KC.")) {
+  if (!hasArguments.value && action.value.startsWith("KC.")) {
     return action.value.split(".")[1];
   } else if (hasArguments.value) {
     return action.value.split("(")[0];
@@ -219,33 +229,55 @@ const argLabel = computed(() => {
 
 const mainSelected = ref(false);
 const argsSelected = ref(false);
-const bgClick = () => {
-  mainSelected.value = true;
-  argsSelected.value = false;
-  emit("selected", { key: props.keyData.matrix, args: argsSelected.value, keyIndex: props.keyIndex });
-};
-const argClick = () => {
-  argsSelected.value = true;
-  mainSelected.value = false;
-  emit("selected", { key: props.keyData.matrix, args: argsSelected.value, keyIndex: props.keyIndex });
-};
+// const bgClick = (e:MouseEvent) => {
+//   mainSelected.value = true;
+//   argsSelected.value = false;
+//   emit("selected", {
+//     key: props.keyData.matrix,
+//     args: argsSelected.value,
+//     keyIndex: props.keyIndex,
+//     added: e.shiftKey
+//   });
+// };
+// const argClick = () => {
+//   argsSelected.value = true;
+//   mainSelected.value = false;
+//   emit("selected", {
+//     key: props.keyData.matrix,
+//     args: argsSelected.value,
+//     keyIndex: props.keyIndex,
+//   });
+// };
 
+// watch(
+//   () => selectedKey.value.key,
+//   (newValue) => {
+//     if (selectedKey.value.key !== props.keyData.matrix) {
+//       mainSelected.value = false;
+//       argsSelected.value = false;
+//     }
+//   }
+// );
 watch(
-  () => selectedKey.value.key,
-  (newValue) => {
-    if (selectedKey.value.key !== props.keyData.matrix) {
-      mainSelected.value = false;
-      argsSelected.value = false;
+    ()=>[...selectedKeys.value],
+    (newValue) => {
+      if (selectedKeys.value.has(props.keyIndex)) {
+        mainSelected.value = true;
+        argsSelected.value = false;
+      }else{
+        mainSelected.value = false;
+        argsSelected.value = false;
+      }
     }
-  }
 );
-
 const rotationOrigin = computed(() => {
-  if(!props.keyData.rx ||  !props.keyData.ry) return "0 0"
-  let x = props.keyData.rx * 58 - props.keyData.x * (baseKeyWidth.value + keyGap)
-  let y = props.keyData.ry * 58 - props.keyData.y * (baseKeyWidth.value + keyGap)
-  return `${x}px ${y}px` // return "xpx ypx"
-})
+  if (!props.keyData.rx || !props.keyData.ry) return "0 0";
+  let x =
+    props.keyData.rx * 58 - props.keyData.x * (baseKeyWidth.value + keyGap);
+  let y =
+    props.keyData.ry * 58 - props.keyData.y * (baseKeyWidth.value + keyGap);
+  return `${x}px ${y}px`; // return "xpx ypx"
+});
 </script>
 
 <style lang="scss" scoped>
@@ -336,7 +368,9 @@ const rotationOrigin = computed(() => {
 .keycap {
   position: absolute;
   //width: 54px;
-  height: 54px;
+  //height: 54px;
+  @apply transition-all;
+
 }
 //.keycap {
 //  width: 50px;

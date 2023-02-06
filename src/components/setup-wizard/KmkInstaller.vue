@@ -33,7 +33,7 @@
         class="radial-progress bg-primary text-primary-content border-4 border-primary"
         :style="{ '--value': progress }"
       >
-        {{ progress === NaN ? "Done" : progress  }}%
+        {{ isNaN(progress) ? "Done" : progress  }}%
       </div>
     </div>
   </div>

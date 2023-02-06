@@ -6,7 +6,7 @@
       <li class="p-4 text-xl font-bold flex items-center">
         <img src="@/assets/icon.png" alt="" class="w-24" />
       </li>
-      <li class="text-xs pl-4 py-2">Selected Keyboard</li>
+      <li class="text-xs pl-4 py-2" >Selected Keyboard</li>
       <li class="p-4 pt-0 flex items-center">
         <span
           @click="reselectKeyboard"
@@ -15,18 +15,17 @@
         >
       </li>
       <li><router-link to="/keymap">Keymap</router-link></li>
-      <li><router-link to="/layout-options">Layout Options</router-link></li>
+<!--      <li><router-link to="/layout-options">Layout Options</router-link></li>-->
       <li><router-link to="/tools">Keyboard Layout</router-link></li>
       <hr class="border-white border-opacity-40" />
-      <li><router-link to="/firmware">Firmware</router-link></li>
+      <li><router-link to="/encoder">Encoder</router-link></li>
       <li><router-link to="/matrix">Matrix</router-link></li>
       <li><router-link to="/pins">Pins</router-link></li>
-      <li><router-link to="/layout">Layout</router-link></li>
       <li><router-link to="/raw-keymap">Raw Keymap</router-link></li>
-      <li><router-link to="/encoder">Encoder</router-link></li>
+      <li><router-link to="/firmware">Firmware</router-link></li>
     </ul>
     <div class="px-4 pt-8 flex-1 overflow-x-auto h-screen">
-      <h1 class="text-5xl font-bold text-center mb-8">Keyboard Config</h1>
+      <h1 class="text-5xl font-bold text-center mb-8" contenteditable="true">Keyboard Config</h1>
       <router-view></router-view>
       <div class="py-4 flex justify-center">
         <div class="btn btn-sm btn-primary" @click="saveKeymap">

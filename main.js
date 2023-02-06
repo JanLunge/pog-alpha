@@ -1,17 +1,16 @@
-const build = false;
 const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const path = require("path");
 const fs = require("fs-extra");
 const decompress = require("decompress");
 const request = require("request");
 const { shell } = require("electron");
+const pjson = require("./package.json");
 let keyboardPath = ""; // uses no slash at the end
 let win;
+const build = pjson.mode === "build";
+console.log(pjson.mode === "build");
 const appDir = app.getPath("appData") + "/pog/";
-// const {
-//   default: installExtension,
-//   VUEJS3_DEVTOOLS,
-// } = require("electron-devtools-installer");
+
 // download kmk and copy it to the keyboard
 function downloadFile(file_url, targetPath) {
   if (!fs.existsSync(appDir)) {
@@ -31,7 +30,7 @@ function downloadFile(file_url, targetPath) {
     .on("response", (data) => {
       // Change the total bytes value to get progress later.
       total_bytes = parseInt(data.headers["content-length"]) || 1028312;
-      console.log('updated total', total_bytes, data.headers, data.statusCode)
+      console.log("updated total", total_bytes, data.headers, data.statusCode);
     })
     .on("data", (chunk) => {
       // Update the received bytes
@@ -156,7 +155,7 @@ const handleKeymapSave = (jsondata) => {
 
     let encoderPins = "";
     pogConfig.encoders.forEach((encoder) => {
-      encoderPins += `(board.${encoder.pad_a}, board.${encoder.pad_b}, None,),`;
+      encoderPins += `(board.GP${encoder.pad_a}, board.GP${encoder.pad_b}, None,),`;
     });
 
     let encoderKeymap = "";
@@ -198,9 +197,9 @@ keyboard = KMKKeyboard()
 ${kmkAddons}
 
 # Cols
-keyboard.col_pins = (${data.colPins.map((a) => "board." + a).join(", ")})
+keyboard.col_pins = (${data.colPins.map((a) => "board.GP" + a).join(", ")})
 # Rows
-keyboard.row_pins = (${data.rowPins.map((a) => "board." + a).join(", ")})
+keyboard.row_pins = (${data.rowPins.map((a) => "board.GP" + a).join(", ")})
 # Diode Direction
 keyboard.diode_orientation = DiodeOrientation.${data.diodeDirection}
 
@@ -243,7 +242,7 @@ function createWindow() {
     height: 800,
     minWidth: 700,
     minHeight: 200,
-    titleBarStyle: "hidden",
+    titleBarStyle: "default",
     backgroundColor: "#000000",
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
@@ -259,20 +258,19 @@ function createWindow() {
     win.loadFile("./frontend_dist/index.html");
   }
 }
+
 const scanForKeyboards = () => {};
+
+// Initial App Activation
 app.whenReady().then(() => {
-  // installExtension(VUEJS3_DEVTOOLS)
-  //   .then((name) => console.log(`Added Extension:  ${name}`))
-  //   .catch((err) => console.log("An error occurred: ", err));
   ipcMain.handle("dialog:openFile", handleFileOpen);
   ipcMain.handle("updateLocalKMKcopy", updateLocalKMKcopy);
-  // ipcMain.handle("saveKeymap", handleKeymapSave);
-  ipcMain.on("saveKeymap", (event, data) => {
-    console.log("trying to save keymap");
-    handleKeymapSave(data);
-  });
+  ipcMain.on("saveKeymap", (event, data) => handleKeymapSave(data));
+
   scanForKeyboards();
   createWindow();
+
+  // open after windows got closed (osx)
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       scanForKeyboards();
@@ -280,6 +278,8 @@ app.whenReady().then(() => {
     }
   });
 });
+
+// kill app if no windows are open (linux / windows)
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();

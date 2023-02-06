@@ -1,45 +1,54 @@
 <template>
   <div class="p-2 btn btn-sm mb-4" @click="showConverter">Import from KLE</div>
   <div v-if="converterVisible">
-    <p>convert kle to pog</p>
-    <p>
-      you can import json files from the
-      <a class="link" href="http://keyboard-layout-editor.com" target="_blank"
-        >keyboard layout editor</a
-      >
-      set the top left label to the matrix position eg '0,1' for row:0 col:1
-    </p>
-    <p>
-      you can use the bottom right label to define a layout variant specific
-      key, eg. '0,2' this would be the first layout option using its third
-      variant, keys you place with the variant option should be in the exact
-      place they should show up in the end so you would stack them on top of
-      another in kle
-    </p>
-    <p>
-      use the editor below to modify your layout, supports arrow keys when
-      selecting a key
-    </p>
-    <div class="grid grid-cols-2 gap-2">
+    <div class="flex gap-2">
+      <div class="text-left">
+        <p>
+          you can import json files from the
+          <a
+            class="link"
+            href="http://keyboard-layout-editor.com"
+            target="_blank"
+            >keyboard layout editor</a
+          >
+        </p>
+        <p>
+          set the top left label to the matrix position eg '0,1' for row:0 col:1
+        </p>
+        <p>
+          set the bottom right label for a layout variant<br />
+          eg. '0,1' this would be the first layout option using its other
+          variant
+        </p>
+      </div>
+      <div class="flex items-center justify-center">
+        <img src="@/assets/kle.png" class="rounded" style="width: 300px" />
+      </div>
+    </div>
+    <div class="flex gap-2 mt-4">
       <textarea
-        class="textarea textarea-bordered"
+        class="textarea textarea-bordered w-full"
+        style="line-height: 1rem"
         v-model="kleInput"
+        rows="8"
       ></textarea>
       <textarea
         class="textarea textarea-bordered"
         v-model="pogOutput"
+        v-if="showRawPogLayout"
       ></textarea>
     </div>
-    <div>
+    <div class="flex flex-col gap-2 mt-2">
+      <span class="text-warning"
+        >this will overwrite your existing layout if it exists</span
+      >
       <button class="btn btn-sm my-4 btn-primary" @click="convert">
         convert to pog.json
       </button>
     </div>
     <hr />
   </div>
-  <div class="btn btn-sm btn-primary" @click="setupDone" v-if="initSetup">
-    Next
-  </div>
+
   <div>
     <div class="flex justify-between">
       <div class="flex gap-1">
@@ -52,7 +61,9 @@
           remove key
         </button>
       </div>
-      <button class="btn btn-sm" @click="saveLayout">Save Layout changes</button>
+      <button class="btn btn-sm" @click="saveLayout">
+        Save Layout changes
+      </button>
     </div>
 
     <keyboard-layout
@@ -63,38 +74,45 @@
       <div class="w-1/2 border-r">
         <variant-switcher></variant-switcher>
       </div>
-      <div v-if="!isNaN(selectedKey.keyIndex)" class="w-1/2 pl-2">
+      <div v-if="selectedKeys.length !== 0" class="w-1/2 pl-2">
         <key-layout-info :layout="tmpLayout"></key-layout-info>
       </div>
+    </div>
+    <div class="btn btn-primary" @click="setupDone" v-if="initSetup">
+      Finish Setup
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { KleToPog } from "@/helpers/helpers";
+import { cleanupKeymap, KleToPog } from "@/helpers/helpers";
 import { computed, onMounted, ref } from "vue";
 import router from "@/router";
 import {
   keymap,
   selectedKeyboard,
   selectedKey,
+  selectedKeys,
   keyLayout,
   selectedConfig,
+  layoutVariants,
+  keycount,
 } from "@/store";
 import KeyboardLayout from "@/components/KeyboardLayout.vue";
-
-import { onKeyStroke } from "@vueuse/core";
+selectedKeys.value = new Set();
+import { isNumber, onKeyStroke } from "@vueuse/core";
 import KeyLayoutInfo from "@/components/KeyLayoutInfo.vue";
 import VariantSwitcher from "@/components/VariantSwitcher.vue";
 const kleInput = ref("");
 const pogOutput = ref("");
+const showRawPogLayout = ref(false);
 const tmpLayout = ref<any[]>([]);
 if (
   selectedConfig.value &&
   selectedConfig.value.layouts &&
   selectedConfig.value.layouts.keymap
 ) {
-  tmpLayout.value = [...selectedConfig.value.layouts.keymap];
+  tmpLayout.value = selectedConfig.value.layouts.keymap;
 }
 const emit = defineEmits(["next"]);
 const converterVisible = ref(false);
@@ -104,16 +122,42 @@ const showConverter = () => {
 const convert = () => {
   const layout = KleToPog(kleInput.value);
   pogOutput.value = JSON.stringify(layout, null, 4);
+  if (!selectedConfig.value) return;
+  // extract variants
+  console.log("checking for variants", layout);
   if (router.currentRoute.value.name !== "tools") {
-    if (!selectedKeyboard.value || !selectedKeyboard.value.configContents)
-      return;
-    selectedKeyboard.value.configContents.layouts = {
+    selectedConfig.value.layouts = {
       keymap: layout,
       labels: [],
     };
-    // auto save
-    tmpLayout.value = layout;
-    // saveKeymap();
+    layout.forEach((key) => {
+      console.log(key);
+      if (key.variant && isNumber(key.variant[0])) {
+        if (!selectedConfig.value) return;
+        // check if variant exists
+        console.log("checking key for variant", key.variant);
+        if (!selectedConfig.value.layouts.labels[key.variant[0]]) {
+          // if not create it
+          selectedConfig.value.layouts.labels[
+            key.variant[0]
+          ] = `Variant ${key.variant[0]}`;
+        }
+      }
+    });
+
+    // init selected variants
+    if (!selectedConfig.value?.selectedVariants) {
+      selectedConfig.value.selectedVariants =
+        selectedConfig.value?.layouts.labels.map((a) => 0);
+    }
+    // create default keymap
+    selectedConfig.value.currentKeymap = [[]];
+    cleanupKeymap();
+    saveKeymap();
+  }
+  tmpLayout.value = layout;
+  if (layout.length > 0) {
+    converterVisible.value = false;
   }
 };
 const setupDone = () => {
@@ -183,23 +227,41 @@ onMounted(() => {
 
   onKeyStroke("ArrowDown", (e) => {
     e.preventDefault();
-    tmpLayout.value[selectedKey.value.keyIndex].y =
-      tmpLayout.value[selectedKey.value.keyIndex].y + 0.25;
+
+    selectedKeys.value.forEach((keyIndex) => {
+      tmpLayout.value[keyIndex].y =
+        tmpLayout.value[keyIndex].y + 0.25;
+    });
   });
   onKeyStroke("ArrowUp", (e) => {
     e.preventDefault();
-    tmpLayout.value[selectedKey.value.keyIndex].y =
-      tmpLayout.value[selectedKey.value.keyIndex].y - 0.25;
+    selectedKeys.value.forEach((keyIndex) => {
+      tmpLayout.value[keyIndex].y = tmpLayout.value[keyIndex].y - 0.25;
+    });
   });
   onKeyStroke("ArrowLeft", (e) => {
     e.preventDefault();
-    tmpLayout.value[selectedKey.value.keyIndex].x =
-      tmpLayout.value[selectedKey.value.keyIndex].x - 0.25;
+    if (e.altKey && selectedKeys.value.length === 1) {
+      // alt select next key
+      selectedKeys.value = [Math.max(selectedKeys.value[0] - 1, 0)];
+      return;
+    }
+    selectedKeys.value.forEach((keyIndex) => {
+      tmpLayout.value[keyIndex].x = tmpLayout.value[keyIndex].x - 0.25;
+    });
   });
   onKeyStroke("ArrowRight", (e) => {
     e.preventDefault();
-    tmpLayout.value[selectedKey.value.keyIndex].x =
-      tmpLayout.value[selectedKey.value.keyIndex].x + 0.25;
+    if (e.altKey && selectedKeys.value.length === 1) {
+      // alt select next key
+      selectedKeys.value = [
+        Math.min(selectedKeys.value[0] + 1, keycount.value),
+      ];
+      return;
+    }
+    selectedKeys.value.forEach((keyIndex) => {
+      tmpLayout.value[keyIndex].x = tmpLayout.value[keyIndex].x + 0.25;
+    });
   });
 });
 const initSetup = computed(() => {

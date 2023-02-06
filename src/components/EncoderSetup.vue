@@ -17,7 +17,7 @@
           type="text"
           class="input input-bordered"
           v-model="encoder.pad_a"
-          placeholder="GP14"
+          placeholder="14"
         />
       </div>
       <div class="flex items-center gap-4">
@@ -26,7 +26,7 @@
           type="text"
           class="input input-bordered"
           v-model="encoder.pad_b"
-          placeholder="GP14"
+          placeholder="14"
         />
       </div>
       <div>

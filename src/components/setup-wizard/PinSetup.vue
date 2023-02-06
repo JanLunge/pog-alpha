@@ -34,7 +34,7 @@
             class="input input-sm input-bordered col-span-4"
             type="text"
             v-model="selectedConfig.pins.rows[index]"
-            placeholder="GP17"
+            placeholder="17"
           />
         </div>
       </div>
@@ -54,7 +54,7 @@
             class="input input-sm input-bordered col-span-4"
             type="text"
             v-model="selectedConfig.pins.cols[index]"
-            placeholder="GP17"
+            placeholder="17"
           />
         </div>
       </div>

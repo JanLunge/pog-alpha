@@ -1,11 +1,21 @@
 import { computed, ref } from "vue";
 
-export const selectedKey = ref<{ key: number[] | undefined; args: boolean, keyIndex: number }>({
+export const selectedKey = ref<{
+  key: number[] | undefined;
+  args: boolean;
+  keyIndex: number;
+}>({
   key: undefined,
   args: false,
-  keyIndex: NaN
+  keyIndex: NaN,
 });
+
+// list of key indexes that are selected
+export const selectedKeys = ref<Set<number>>(new Set())
+
+// currently selected keymap layer
 export const selectedLayer = ref(0);
+
 export const selectedKeyboard = ref<{
   path: string;
   hasKmk: boolean;
@@ -27,6 +37,7 @@ export const selectedKeyboard = ref<{
         currentKeymap: (string | undefined)[][]; // layer > key index > keycode
         pins: { rows: string[]; cols: string[] };
         layouts: { labels: string[]; keymap: any[] };
+        selectedVariants: number[];
       };
 }>({
   path: "",
@@ -52,15 +63,20 @@ export const selectedVariants = ref<number[]>([]);
 export const layoutVariants = ref<(string | string[])[]>([]);
 
 export const keymap = computed({
-  get(){
-    if (!selectedConfig.value) return undefined
-    return selectedConfig.value.currentKeymap
-  },
-  set(newVal:any){
+  get() {
     if (!selectedConfig.value) return undefined;
-    selectedConfig.value.currentKeymap = newVal
-  }
-})
+    return selectedConfig.value.currentKeymap;
+  },
+  set(newVal: any) {
+    if (!selectedConfig.value) return undefined;
+    selectedConfig.value.currentKeymap = newVal;
+  },
+});
+export const keycount = computed(() => {
+  if (!selectedConfig.value) return 0;
+  return selectedConfig.value?.layouts.keymap.length + 1;
+});
+
 //ref<(string | undefined)[][]>([["KC.TRNS", "KC.TRNS"]]);
 export const keyLayout = ref<{
   info: { matrix: number[] };

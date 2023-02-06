@@ -1,6 +1,8 @@
 # pog 
 keyboard flashing utility
 
+POG stands for Pog Open Gui
+
 ![version](https://badgen.net/badge/version/v0.0.9/green )
 
 ![logo](build/icon.png?raw=true)
@@ -31,11 +33,14 @@ then to package the application run
 
 # Tasks
 
-- [ ] Layout editor to replace KLE
-- [ ] save pog.json (use as main storage for everything)
-- [ ] way to handle differences between pog.json to kmk code
+- [x] Layout editor to replace KLE
+- [x] save pog.json (use as main storage for everything)
+- [ ] boot.py generation
 - [ ] share pog.json files
-- [ ] don't overwrite everything in code.py || place codeblocks somewhere safe || use injection points from the pog.json
-- [ ] adjust keymap when matrix changes
-- [ ] handle filbert code.py parse error
+- [ ] use injection points from the pog.json for codeblocks
+- [x] adjust keymap when matrix changes
 - [ ] dragging keys on the layout editor
+- [ ] language switcher for german and other layouts changing the labels on the keymap
+- [ ] modtap/tapdance/macros/sequences
+- [ ] encoder support direct pin click
+- [ ] way to handle differences between pog.json to kmk code

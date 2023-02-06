@@ -1,6 +1,6 @@
 import { ref } from "vue";
 import JSON5 from "json5";
-import {keymap, selectedConfig, selectedKeyboard} from "@/store";
+import { keymap, selectedConfig } from "@/store";
 export const matrixPositionToIndex = ({
   pos,
   matrixSize,
@@ -19,25 +19,24 @@ const formatMatrixFromLabel = (label: string): number[] | false => {
 };
 
 export const cleanupKeymap = () => {
-  if(!selectedConfig.value) return
-  if( !selectedConfig.value.currentKeymap ){
-    selectedConfig.value.currentKeymap = [[]]
+  if (!selectedConfig.value) return;
+  if (!selectedConfig.value.currentKeymap) {
+    selectedConfig.value.currentKeymap = [[]];
   }
-  if( selectedConfig.value.currentKeymap.length === 0 ){
-    selectedConfig.value.currentKeymap = [[]]
+  if (selectedConfig.value.currentKeymap.length === 0) {
+    selectedConfig.value.currentKeymap = [[]];
   }
   if (!Array.isArray(keymap.value)) keymap.value = [];
   const filledKeymap = keymap.value.map((layer: any[]) => {
+    // replace empty keys with KC.TRNS
     const tmpLayer = layer.map((key: string | undefined) => {
-      // replace empty keys with KC.TRNS
       if (!key) return "KC.TRNS";
       return key;
     });
 
-    if (!selectedKeyboard.value || !selectedKeyboard.value.configContents)
-      return [];
-    const matrixWidth = selectedKeyboard.value.configContents.matrix.cols;
-    const matrixHeight = selectedKeyboard.value.configContents.matrix.rows;
+    if (!selectedConfig.value) return;
+    const matrixWidth = selectedConfig.value.matrix.cols;
+    const matrixHeight = selectedConfig.value.matrix.rows;
     const matrixKeyCount = matrixHeight * matrixWidth;
     if (matrixKeyCount > tmpLayer.length) {
       while (matrixKeyCount > tmpLayer.length) {
@@ -52,6 +51,7 @@ export const cleanupKeymap = () => {
     return [];
   });
   if (filledKeymap) keymap.value = filledKeymap;
+  console.log('set new keymap to ', filledKeymap)
 };
 
 const pickKeyAttributes = ({
@@ -84,11 +84,23 @@ const pickKeyAttributes = ({
 });
 // convert a kle keymap to pog
 export const KleToPog = (kleString: string) => {
+  let keymap = [];
+  try {
+    keymap = JSON5.parse(kleString);
+  } catch (e) {
+    console.log(e);
+    try {
+      keymap = JSON5.parse("[" + kleString + "]");
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   // parse Layout file
   const configContents: {
     layouts: { keymap: string[][]; labels: string[] | string[][] };
   } = {
-    layouts: { keymap: JSON5.parse(kleString), labels: [] },
+    layouts: { keymap, labels: [] },
   };
   const keyboardInfo = ref<{
     keys: KeyData[];

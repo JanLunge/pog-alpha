@@ -10,7 +10,6 @@ import KmkInstaller from "@/components/setup-wizard/KmkInstaller.vue";
 import MatrixSetup from "@/components/setup-wizard/MatrixSetup.vue";
 import PinSetup from "@/components/setup-wizard/PinSetup.vue";
 import RawKeymapEditor from "@/components/RawKeymapEditor.vue";
-import LayoutEditor from "@/components/LayoutEditor.vue";
 import EncoderSetup from "@/components/EncoderSetup.vue";
 import Tools from "@/components/Tools.vue";
 
@@ -42,10 +41,6 @@ const router = createRouter({
         {
           path: "pins",
           component: PinSetup,
-        },
-        {
-          path: "layout",
-          component: LayoutEditor,
         },
         {
           path: "raw-keymap",
