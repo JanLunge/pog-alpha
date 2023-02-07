@@ -22,7 +22,7 @@
       >
         <div
           class="rotation-origin-helper"
-          v-if="mode === 'layout' && !isNaN(selectedKey.keyIndex)"
+          v-if="mode === 'layout' && selectedKeys.size !== 0"
           :style="{ left: rotationOriginX, top: rotationOriginY }"
         ></div>
 
@@ -41,11 +41,12 @@
 
 <script lang="ts" setup>
 import KeyCap from "@/components/KeyCap.vue";
-import { computed, onMounted, ref } from "vue";
+import { computed, onDeactivated, onMounted, onUnmounted, ref } from "vue";
 import { selectedKey, selectedKeys } from "@/store";
 import { SelectionArea } from "@viselect/vue";
 import type { SelectionEvent } from "@viselect/vue";
-const props = defineProps(["keyLayout", "keymap", "mode"]);
+import { isNumber } from "@vueuse/core";
+const props = defineProps(["keyLayout", "mode"]);
 // mode can be layout or keymap
 
 // find right edge
@@ -85,11 +86,11 @@ const keyChanged = ({
   keyIndex: number;
   added: boolean;
 }) => {
-  if (added && props.mode === "layout") {
-    selectedKeys.value.add(keyIndex);
-  } else {
-    selectedKeys.value = new Set([keyIndex]);
-  }
+  // if (added && props.mode === "layout") {
+  //   selectedKeys.value.add(keyIndex);
+  // } else {
+  //   selectedKeys.value = new Set([keyIndex]);
+  // }
   // selectedKey.value.key = key;
   // selectedKey.value.args = args;
   // selectedKey.value.keyIndex = keyIndex;
@@ -111,16 +112,20 @@ onMounted(() => {
   window.addEventListener("resize", updateScale);
 });
 
+onUnmounted(() => {
+  window.removeEventListener("resize", updateScale);
+});
+
 const rotationOriginX = computed(() => {
-  if (!selectedKey.value) return 0;
-  if (!props.keyLayout.keys[selectedKey.value.keyIndex]) return "0";
-  let x = props.keyLayout.keys[selectedKey.value.keyIndex].rx * 58;
+  if (!selectedKeys.value.size) return 0;
+  if (!props.keyLayout.keys[selectedKeys.value.first()]) return "0";
+  let x = props.keyLayout.keys[selectedKeys.value.first()].rx * 58;
   return `${x}px`; // return "xpx ypx"
 });
 const rotationOriginY = computed(() => {
-  if (!selectedKey.value) return 0;
-  if (!props.keyLayout.keys[selectedKey.value.keyIndex]) return "0";
-  let y = props.keyLayout.keys[selectedKey.value.keyIndex].ry * 58;
+  if (!selectedKeys.value.size) return 0;
+  if (!props.keyLayout.keys[selectedKeys.value.first()]) return "0";
+  let y = props.keyLayout.keys[selectedKeys.value.first()].ry * 58;
   return `${y}px`; // return "xpx ypx"
 });
 
@@ -137,7 +142,7 @@ const rotationOriginY = computed(() => {
 const extractIndexes = (els: Element[]): number[] => {
   return els
     .map((v) => v.getAttribute("data-index"))
-    .filter(Boolean)
+    .filter((a) => !isNumber(a))
     .map(Number);
 };
 const onMove = ({
@@ -147,6 +152,7 @@ const onMove = ({
 }: SelectionEvent) => {
   extractIndexes(added).forEach((id) => selectedKeys.value.add(id));
   extractIndexes(removed).forEach((id) => selectedKeys.value.delete(id));
+  console.log(added, removed);
 };
 const onStart = ({ event, selection }: SelectionEvent) => {
   if (!event?.ctrlKey && !event?.metaKey) {
@@ -174,7 +180,7 @@ const onStart = ({ event, selection }: SelectionEvent) => {
 </style>
 <style>
 .selection-area {
-  background: rgba(152, 90, 19,0.2);
+  background: rgba(152, 90, 19, 0.2);
   border: 2px solid rgb(242, 140, 24);
   border-radius: 0.1em;
   z-index: 100;

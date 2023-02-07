@@ -1,10 +1,16 @@
-import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router'
+import { createApp } from "vue";
+import App from "./App.vue";
+import router from "./router";
 
-import './style/index.css'
-const app = createApp(App)
+import "./style/index.css";
+const app = createApp(App);
 
-app.use(router)
+app.use(router);
 
-app.mount('#app')
+app.mount("#app");
+
+Object.defineProperty(Set.prototype, "first", {
+  value() {
+    return this.values().next().value;
+  },
+});

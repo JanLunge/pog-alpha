@@ -14,8 +14,8 @@
       <div class="tab tab-border" @click="removeLayer">remove last Layer</div>
     </div>
   </div>
-  <keyboard-layout :key-layout="keyLayout" :keymap="keymap"></keyboard-layout>
-  <div v-if="[...selectedKeys].length !== 0" class="my-4">
+  <keyboard-layout :key-layout="keyLayout" />
+  <div v-if="selectedKeys.size !== 0" class="my-4">
     <p>Keycode Options for Selected Key(s)</p>
     <div class="flex gap-2">
       <select class="select select-bordered" v-model="keycodeModeForSelection">
@@ -55,7 +55,7 @@ import { matrixPositionToIndex, selectNextKey } from "@/helpers/helpers";
 import { ref } from "vue";
 
 const tmpKeycode = ref("")
-selectedKeys.value = new Set();
+selectedKeys.value.clear()
 
 const keycodeModeForSelection = ref<
   "simple" | "combo" | "sequence" | "custom" | "tapdance"
@@ -90,7 +90,7 @@ const setKey = (keyCode: string) => {
     keymap.value[selectedLayer.value][keyIndex] = keyCode;
   });
   // if one key is selected select the next
-  if ([...selectedKeys.value].length === 1) {
+  if (selectedKeys.value.size === 1) {
     selectNextKey();
   }
 };

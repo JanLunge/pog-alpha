@@ -56,26 +56,23 @@
         <button
           class="btn btn-sm"
           @click="removeKey"
-          :disabled="isNaN(selectedKey.keyIndex)"
+          :disabled="selectedKeys.size !== 0"
         >
           remove key
         </button>
       </div>
-      <button class="btn btn-sm" @click="saveLayout">
-        Save Layout changes
-      </button>
     </div>
 
     <keyboard-layout
-      :key-layout="{ keys: tmpLayout }"
+      :key-layout="{ keys: selectedConfig.layouts.keymap }"
       mode="layout"
-    ></keyboard-layout>
+    />
     <div class="flex">
       <div class="w-1/2 border-r">
         <variant-switcher></variant-switcher>
       </div>
-      <div v-if="selectedKeys.length !== 0" class="w-1/2 pl-2">
-        <key-layout-info :layout="tmpLayout"></key-layout-info>
+      <div v-if="selectedKeys.size !== 0" class="w-1/2 pl-2">
+        <key-layout-info :layout="selectedConfig.layouts.keymap"></key-layout-info>
       </div>
     </div>
     <div class="btn btn-primary" @click="setupDone" v-if="initSetup">
@@ -85,7 +82,12 @@
 </template>
 
 <script lang="ts" setup>
-import {cleanupKeymap, KleToPog, selectNextKey, selectPrevKey} from "@/helpers/helpers";
+import {
+  cleanupKeymap,
+  KleToPog,
+  selectNextKey,
+  selectPrevKey,
+} from "@/helpers/helpers";
 import { computed, onMounted, ref } from "vue";
 import router from "@/router";
 import {
@@ -99,21 +101,14 @@ import {
   keycount,
 } from "@/store";
 import KeyboardLayout from "@/components/KeyboardLayout.vue";
-selectedKeys.value = new Set();
+selectedKeys.value.clear()
 import { isNumber, onKeyStroke } from "@vueuse/core";
 import KeyLayoutInfo from "@/components/KeyLayoutInfo.vue";
 import VariantSwitcher from "@/components/VariantSwitcher.vue";
 const kleInput = ref("");
 const pogOutput = ref("");
 const showRawPogLayout = ref(false);
-const tmpLayout = ref<any[]>([]);
-if (
-  selectedConfig.value &&
-  selectedConfig.value.layouts &&
-  selectedConfig.value.layouts.keymap
-) {
-  tmpLayout.value = selectedConfig.value.layouts.keymap;
-}
+
 const emit = defineEmits(["next"]);
 const converterVisible = ref(false);
 const showConverter = () => {
@@ -155,7 +150,7 @@ const convert = () => {
     cleanupKeymap();
     saveKeymap();
   }
-  tmpLayout.value = layout;
+  selectedConfig.value.layouts.keymap = layout;
   if (layout.length > 0) {
     converterVisible.value = false;
   }
@@ -164,7 +159,7 @@ const setupDone = () => {
   if (!selectedConfig.value) return;
   if (!selectedConfig.value.layouts)
     selectedConfig.value.layouts = { keymap: [], labels: [] };
-  selectedConfig.value.layouts.keymap = tmpLayout.value;
+  // selectedConfig.value.layouts.keymap = tmpLayout.value;
   emit("next");
 };
 
@@ -177,19 +172,20 @@ const saveKeymap = async () => {
     diodeDirection: selectedKeyboard.value.configContents.matrix.diodeDirection,
     config: selectedKeyboard.value,
   };
+
+
   // save to pog.json
   selectedKeyboard.value.configContents.currentKeymap = keymap.value;
   const saveResponse = await (window as any).electronAPI.saveKeymap(
     JSON.stringify(data)
   );
-  // const saveResponse = await (window as any).electronAPI.saveKeymap(data);
 };
 
 const addKey = () => {
   // add key to the last position (+ keywidth ) + 1
   // dasically just to not have them overlap
-  if (tmpLayout.value.length === 0) {
-    tmpLayout.value.push({
+  if (selectedConfig.value.layouts.keymap.length === 0) {
+    selectedConfig.value.layouts.keymap.push({
       x: 0,
       y: 0,
       matrix: [],
@@ -200,11 +196,11 @@ const addKey = () => {
       y: 0,
       matrix: [],
     };
-    tmpLayout.value.forEach((key) => {
+    selectedConfig.value.layouts.keymap.forEach((key) => {
       if (lastkey.y < key.y) lastkey = key;
       if (lastkey.y === key.y && lastkey.x < key.x) lastkey = key;
     });
-    tmpLayout.value.push({
+    selectedConfig.value.layouts.keymap.push({
       x: lastkey.x + 1,
       y: lastkey.y,
       matrix: [],
@@ -213,15 +209,12 @@ const addKey = () => {
 };
 
 const removeKey = () => {
-  tmpLayout.value = tmpLayout.value.filter((key, index) => {
-    return index !== selectedKey.value.keyIndex;
+  selectedConfig.value.layouts.keymap = selectedConfig.value.layouts.keymap.filter((key, index) => {
+    return !selectedKeys.value.has(index);
   });
 };
 
-const saveLayout = () => {
-  if (!selectedConfig.value) return;
-  selectedConfig.value.layouts.keymap = tmpLayout.value;
-};
+
 onMounted(() => {
   // move keys with arrows
 
@@ -229,35 +222,35 @@ onMounted(() => {
     e.preventDefault();
 
     selectedKeys.value.forEach((keyIndex) => {
-      tmpLayout.value[keyIndex].y = tmpLayout.value[keyIndex].y + 0.25;
+      selectedConfig.value.layouts.keymap[keyIndex].y = selectedConfig.value.layouts.keymap[keyIndex].y + 0.25;
     });
   });
   onKeyStroke("ArrowUp", (e) => {
     e.preventDefault();
     selectedKeys.value.forEach((keyIndex) => {
-      tmpLayout.value[keyIndex].y = tmpLayout.value[keyIndex].y - 0.25;
+      selectedConfig.value.layouts.keymap[keyIndex].y = selectedConfig.value.layouts.keymap[keyIndex].y - 0.25;
     });
   });
   onKeyStroke("ArrowLeft", (e) => {
     e.preventDefault();
-    if (e.altKey && [...selectedKeys.value].length === 1) {
+    if (e.altKey && selectedKeys.value.size === 1) {
       // alt select next key
-      selectPrevKey()
+      selectPrevKey();
       return;
     }
     selectedKeys.value.forEach((keyIndex) => {
-      tmpLayout.value[keyIndex].x = tmpLayout.value[keyIndex].x - 0.25;
+      selectedConfig.value.layouts.keymap[keyIndex].x = selectedConfig.value.layouts.keymap[keyIndex].x - 0.25;
     });
   });
   onKeyStroke("ArrowRight", (e) => {
     e.preventDefault();
     if (e.altKey && [...selectedKeys.value].length === 1) {
       // alt select next key
-      selectNextKey()
+      selectNextKey();
       return;
     }
     selectedKeys.value.forEach((keyIndex) => {
-      tmpLayout.value[keyIndex].x = tmpLayout.value[keyIndex].x + 0.25;
+      selectedConfig.value.layouts.keymap[keyIndex].x = selectedConfig.value.layouts.keymap[keyIndex].x + 0.25;
     });
   });
 });
