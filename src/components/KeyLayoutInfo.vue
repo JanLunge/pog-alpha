@@ -1,6 +1,6 @@
 <template>
   <p class="font-bold">Key Info for key #{{ [...selectedKeys][0] }}</p>
-  <p>selected {{ [...selectedKeys].length }} keys</p>
+  <p>selected {{ selectedKeys.size }} keys</p>
   <div class="grid gap-2 grid-cols-2 text-right">
     <span>x</span>
     <input
@@ -135,7 +135,9 @@ const tmpKey = ref<{
 
 const updateSelectedKey = () => {
   if ([...selectedKeys.value].length === 1) {
-    const keyToLoad = JSON.parse(JSON.stringify(props.layout[[...selectedKeys.value][0]]))
+    const keyToLoad = JSON.parse(
+      JSON.stringify(props.layout[[...selectedKeys.value][0]])
+    );
     tmpKey.value = {
       matrix: ["", ""],
       variant: ["", ""],
@@ -161,8 +163,19 @@ const updateSelectedKey = () => {
 };
 
 updateSelectedKey();
+// watch(
+//   () => [...selectedKeys.value],
+//   () => updateSelectedKey()
+// );
+
 watch(
-  () => [...selectedKeys.value],
+  () => {
+    return JSON.stringify(
+      props.layout.filter((a, index) => {
+        return selectedKeys.value.has(index);
+      })
+    );
+  },
   () => updateSelectedKey()
 );
 
@@ -170,13 +183,20 @@ const updateKey = () => {
   selectedKeys.value.forEach((keyIndex) => {
     // only modify if a field has a value
     // validate all fields and remove things that are set to default
-    if (tmpKey.value.x !== "") props.layout[keyIndex].x = Number(tmpKey.value.x);
-    if (tmpKey.value.y !== "") props.layout[keyIndex].y = Number(tmpKey.value.y);
-    if (tmpKey.value.w !== "") props.layout[keyIndex].w = Number(tmpKey.value.w);
-    if (tmpKey.value.h !== "") props.layout[keyIndex].h = Number(tmpKey.value.h);
-    if (tmpKey.value.r !== "") props.layout[keyIndex].r = Number(tmpKey.value.r);
-    if (tmpKey.value.rx !== "") props.layout[keyIndex].rx = Number(tmpKey.value.rx);
-    if (tmpKey.value.ry !== "") props.layout[keyIndex].ry = Number(tmpKey.value.ry);
+    if (tmpKey.value.x !== "")
+      props.layout[keyIndex].x = Number(tmpKey.value.x);
+    if (tmpKey.value.y !== "")
+      props.layout[keyIndex].y = Number(tmpKey.value.y);
+    if (tmpKey.value.w !== "")
+      props.layout[keyIndex].w = Number(tmpKey.value.w);
+    if (tmpKey.value.h !== "")
+      props.layout[keyIndex].h = Number(tmpKey.value.h);
+    if (tmpKey.value.r !== "")
+      props.layout[keyIndex].r = Number(tmpKey.value.r);
+    if (tmpKey.value.rx !== "")
+      props.layout[keyIndex].rx = Number(tmpKey.value.rx);
+    if (tmpKey.value.ry !== "")
+      props.layout[keyIndex].ry = Number(tmpKey.value.ry);
 
     // if (
     //   (tmpKey.value.matrix &&
@@ -201,7 +221,7 @@ const updateKey = () => {
       } else {
         props.layout[keyIndex].matrix[0] = Number(tmpKey.value.matrix[0]);
       }
-      console.log(props.layout[keyIndex].matrix)
+      console.log(props.layout[keyIndex].matrix);
     }
     if (tmpKey.value.matrix && tmpKey.value.matrix[1] !== "") {
       if (!props.layout[keyIndex].matrix)

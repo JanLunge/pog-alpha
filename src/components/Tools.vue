@@ -53,13 +53,7 @@
     <div class="flex justify-between">
       <div class="flex gap-1">
         <button class="btn btn-sm" @click="addKey">add key</button>
-        <button
-          class="btn btn-sm"
-          @click="removeKey"
-          :disabled="selectedKeys.size !== 0"
-        >
-          remove key
-        </button>
+        <button class="btn btn-sm" @click="removeKey">remove key</button>
       </div>
     </div>
 
@@ -71,8 +65,10 @@
       <div class="w-1/2 border-r">
         <variant-switcher></variant-switcher>
       </div>
-      <div v-if="selectedKeys.size !== 0" class="w-1/2 pl-2">
-        <key-layout-info :layout="selectedConfig.layouts.keymap"></key-layout-info>
+      <div class="w-1/2 pl-2">
+        <key-layout-info
+          :layout="selectedConfig.layouts.keymap"
+        ></key-layout-info>
       </div>
     </div>
     <div class="btn btn-primary" @click="setupDone" v-if="initSetup">
@@ -93,15 +89,11 @@ import router from "@/router";
 import {
   keymap,
   selectedKeyboard,
-  selectedKey,
   selectedKeys,
-  keyLayout,
   selectedConfig,
-  layoutVariants,
-  keycount,
 } from "@/store";
 import KeyboardLayout from "@/components/KeyboardLayout.vue";
-selectedKeys.value.clear()
+selectedKeys.value.clear();
 import { isNumber, onKeyStroke } from "@vueuse/core";
 import KeyLayoutInfo from "@/components/KeyLayoutInfo.vue";
 import VariantSwitcher from "@/components/VariantSwitcher.vue";
@@ -173,7 +165,6 @@ const saveKeymap = async () => {
     config: selectedKeyboard.value,
   };
 
-
   // save to pog.json
   selectedKeyboard.value.configContents.currentKeymap = keymap.value;
   const saveResponse = await (window as any).electronAPI.saveKeymap(
@@ -201,7 +192,7 @@ const addKey = () => {
       if (lastkey.y === key.y && lastkey.x < key.x) lastkey = key;
     });
     selectedConfig.value.layouts.keymap.push({
-      x: lastkey.x + 1,
+      x: lastkey.x + (lastkey.w || 1),
       y: lastkey.y,
       matrix: [],
     });
@@ -209,11 +200,12 @@ const addKey = () => {
 };
 
 const removeKey = () => {
-  selectedConfig.value.layouts.keymap = selectedConfig.value.layouts.keymap.filter((key, index) => {
-    return !selectedKeys.value.has(index);
-  });
+  selectedConfig.value.layouts.keymap =
+    selectedConfig.value.layouts.keymap.filter((key, index) => {
+      return !selectedKeys.value.has(index);
+    });
+  selectedKeys.value.clear();
 };
-
 
 onMounted(() => {
   // move keys with arrows
@@ -222,13 +214,15 @@ onMounted(() => {
     e.preventDefault();
 
     selectedKeys.value.forEach((keyIndex) => {
-      selectedConfig.value.layouts.keymap[keyIndex].y = selectedConfig.value.layouts.keymap[keyIndex].y + 0.25;
+      selectedConfig.value.layouts.keymap[keyIndex].y =
+        selectedConfig.value.layouts.keymap[keyIndex].y + 0.25;
     });
   });
   onKeyStroke("ArrowUp", (e) => {
     e.preventDefault();
     selectedKeys.value.forEach((keyIndex) => {
-      selectedConfig.value.layouts.keymap[keyIndex].y = selectedConfig.value.layouts.keymap[keyIndex].y - 0.25;
+      selectedConfig.value.layouts.keymap[keyIndex].y =
+        selectedConfig.value.layouts.keymap[keyIndex].y - 0.25;
     });
   });
   onKeyStroke("ArrowLeft", (e) => {
@@ -238,8 +232,17 @@ onMounted(() => {
       selectPrevKey();
       return;
     }
+    if (e.shiftKey) {
+      // set key width
+      selectedKeys.value.forEach((keyIndex) => {
+        selectedConfig.value.layouts.keymap[keyIndex].w =
+          selectedConfig.value.layouts.keymap[keyIndex].w - 0.25;
+      });
+      return;
+    }
     selectedKeys.value.forEach((keyIndex) => {
-      selectedConfig.value.layouts.keymap[keyIndex].x = selectedConfig.value.layouts.keymap[keyIndex].x - 0.25;
+      selectedConfig.value.layouts.keymap[keyIndex].x =
+        selectedConfig.value.layouts.keymap[keyIndex].x - 0.25;
     });
   });
   onKeyStroke("ArrowRight", (e) => {
@@ -249,13 +252,25 @@ onMounted(() => {
       selectNextKey();
       return;
     }
+    if (e.shiftKey) {
+      // set key width
+      selectedKeys.value.forEach((keyIndex) => {
+        selectedConfig.value.layouts.keymap[keyIndex].w =
+          Number(selectedConfig.value.layouts.keymap[keyIndex].w) + 0.25;
+      });
+      return;
+    }
     selectedKeys.value.forEach((keyIndex) => {
-      selectedConfig.value.layouts.keymap[keyIndex].x = selectedConfig.value.layouts.keymap[keyIndex].x + 0.25;
+      selectedConfig.value.layouts.keymap[keyIndex].x =
+        selectedConfig.value.layouts.keymap[keyIndex].x + 0.25;
     });
   });
 });
 const initSetup = computed(() => {
   return router.currentRoute.value.path !== "/tools";
+});
+const hasSelectedKeys = computed(() => {
+  return selectedKeys.value.size;
 });
 </script>
 

@@ -44,3 +44,6 @@ then to package the application run
 - [ ] modtap/tapdance/macros/sequences
 - [ ] encoder support direct pin click
 - [ ] way to handle differences between pog.json to kmk code
+
+- [ ] wiring preview
+- [ ] drag and drop keys

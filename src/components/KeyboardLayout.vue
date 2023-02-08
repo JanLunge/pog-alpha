@@ -25,6 +25,9 @@
           v-if="mode === 'layout' && selectedKeys.size !== 0"
           :style="{ left: rotationOriginX, top: rotationOriginY }"
         ></div>
+        <div class="wire-preview">
+          <!--          for each key show 2 wires o the next keys-->
+        </div>
 
         <key-cap
           v-for="(key, keyIndex) in keyLayout.keys"
@@ -42,7 +45,7 @@
 <script lang="ts" setup>
 import KeyCap from "@/components/KeyCap.vue";
 import { computed, onDeactivated, onMounted, onUnmounted, ref } from "vue";
-import { selectedKey, selectedKeys } from "@/store";
+import { selectedConfig, selectedKey, selectedKeys } from "@/store";
 import { SelectionArea } from "@viselect/vue";
 import type { SelectionEvent } from "@viselect/vue";
 import { isNumber } from "@vueuse/core";
@@ -145,20 +148,67 @@ const extractIndexes = (els: Element[]): number[] => {
     .filter((a) => !isNumber(a))
     .map(Number);
 };
-const onMove = ({
-  store: {
-    changed: { added, removed },
-  },
-}: SelectionEvent) => {
-  extractIndexes(added).forEach((id) => selectedKeys.value.add(id));
-  extractIndexes(removed).forEach((id) => selectedKeys.value.delete(id));
-  console.log(added, removed);
-};
+const moving = ref(false);
+const moveStart = ref({ x: 0, y: 0 });
+const writtenDelta = ref({ x: 0, y: 0 });
 const onStart = ({ event, selection }: SelectionEvent) => {
+  if (event?.shiftKey && props.mode==='layout') {
+    // save start point
+    moving.value = true;
+    moveStart.value.x = event.clientX;
+    moveStart.value.y = event.clientY;
+    selection.getSelectionArea().classList.add("hidden");
+    return;
+  }
+  selection.getSelectionArea().classList.remove("hidden");
   if (!event?.ctrlKey && !event?.metaKey) {
     selection.clearSelection();
     selectedKeys.value.clear();
   }
+};
+const roundNearQtr = (number: number) => {
+  return Math.round(number * 4) / 4;
+};
+const onMove = ({
+  store: {
+    changed: { added, removed },
+  },
+  event,
+  selection,
+}: SelectionEvent) => {
+  if (event?.shiftKey && props.mode==='layout') {
+    // console.log(event, selection);
+    // move keys by start distance
+    let delta = { x: 0, y: 0 };
+    delta.x = event.clientX - moveStart.value.x;
+    delta.y = event.clientY - moveStart.value.y;
+    console.log(delta);
+    // snap in every 0.25 of a key width 58
+    const deltaTmp = {
+      x: roundNearQtr(delta.x / 58),
+      y: roundNearQtr(delta.y / 58),
+    };
+    // subtract already written distance
+    console.log(deltaTmp);
+    const writableDelta = {
+      x: deltaTmp.x - writtenDelta.value.x,
+      y: deltaTmp.y - writtenDelta.value.y,
+    };
+    writtenDelta.value.x = deltaTmp.x;
+    writtenDelta.value.y = deltaTmp.y;
+    console.log("w", writableDelta);
+    // write to each key
+    selectedKeys.value.forEach((keyIndex) => {
+      selectedConfig.value.layouts.keymap[keyIndex].x =
+        selectedConfig.value.layouts.keymap[keyIndex].x + writableDelta.x;
+      selectedConfig.value.layouts.keymap[keyIndex].y =
+        selectedConfig.value.layouts.keymap[keyIndex].y + writableDelta.y;
+    });
+    return;
+  }
+  extractIndexes(added).forEach((id) => selectedKeys.value.add(id));
+  extractIndexes(removed).forEach((id) => selectedKeys.value.delete(id));
+  console.log(added, removed);
 };
 </script>
 
@@ -178,11 +228,14 @@ const onStart = ({ event, selection }: SelectionEvent) => {
   @apply p-4;
 }
 </style>
-<style>
+<style lang="scss">
 .selection-area {
   background: rgba(152, 90, 19, 0.2);
   border: 2px solid rgb(242, 140, 24);
   border-radius: 0.1em;
   z-index: 100;
+  &.hidden {
+    opacity: 0;
+  }
 }
 </style>
