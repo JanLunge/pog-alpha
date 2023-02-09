@@ -23,7 +23,6 @@
         width: keyWidth - 2 + 'px',
         height: keyHeight - 2 + 'px',
       }"
-      @click="bgClick"
     ></div>
     <div
       class="keyborder"
@@ -32,7 +31,6 @@
         width: keyWidth + 'px',
         height: keyHeight + 'px',
       }"
-      @click="bgClick"
     ></div>
     <div
       class="keyborder"
@@ -43,11 +41,9 @@
         width: keyWidth2 + 'px',
         height: keyHeight2 + 'px',
       }"
-      @click="bgClick"
     ></div>
     <div
       class="keytop"
-      @click="bgClick"
       v-if="keyData.w2 || keyData.h2"
       :style="{
         height: keyTopHeight2 + 'px',
@@ -61,7 +57,6 @@
     <!--    ></div>-->
     <div
       class="keytop"
-      @click="bgClick"
       :style="{
         height: keyTopHeight + 'px',
         width: keyTopWidth + 'px',
@@ -81,7 +76,6 @@
         <div
           class="arg-bottom"
           :class="{ selected: argsSelected }"
-          @click="argClick"
         >
           {{ argLabel }}
         </div>

@@ -171,7 +171,7 @@ updateSelectedKey();
 watch(
   () => {
     return JSON.stringify(
-      props.layout.filter((a, index) => {
+      props.layout.filter((a:any, index:number) => {
         return selectedKeys.value.has(index);
       })
     );

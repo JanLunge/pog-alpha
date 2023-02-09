@@ -121,14 +121,16 @@ onUnmounted(() => {
 
 const rotationOriginX = computed(() => {
   if (!selectedKeys.value.size) return 0;
-  if (!props.keyLayout.keys[selectedKeys.value.first()]) return "0";
-  let x = props.keyLayout.keys[selectedKeys.value.first()].rx * 58;
+  const firstSelectedKey = [...selectedKeys.value][0]
+  if (!props.keyLayout.keys[firstSelectedKey]) return "0";
+  let x = props.keyLayout.keys[firstSelectedKey].rx * 58;
   return `${x}px`; // return "xpx ypx"
 });
 const rotationOriginY = computed(() => {
   if (!selectedKeys.value.size) return 0;
-  if (!props.keyLayout.keys[selectedKeys.value.first()]) return "0";
-  let y = props.keyLayout.keys[selectedKeys.value.first()].ry * 58;
+  const firstSelectedKey = [...selectedKeys.value][0]
+  if (!props.keyLayout.keys[firstSelectedKey]) return "0";
+  let y = props.keyLayout.keys[firstSelectedKey].ry * 58;
   return `${y}px`; // return "xpx ypx"
 });
 
@@ -152,12 +154,14 @@ const moving = ref(false);
 const moveStart = ref({ x: 0, y: 0 });
 const writtenDelta = ref({ x: 0, y: 0 });
 const onStart = ({ event, selection }: SelectionEvent) => {
-  if (event?.shiftKey && props.mode==='layout') {
-    // save start point
-    moving.value = true;
-    moveStart.value.x = event.clientX;
-    moveStart.value.y = event.clientY;
-    selection.getSelectionArea().classList.add("hidden");
+  if (event?.shiftKey && props.mode === "layout") {
+    if (event instanceof MouseEvent) {
+      // save start point
+      moving.value = true;
+      moveStart.value.x = event.clientX;
+      moveStart.value.y = event.clientY;
+      selection.getSelectionArea().classList.add("hidden");
+    }
     return;
   }
   selection.getSelectionArea().classList.remove("hidden");
@@ -176,34 +180,36 @@ const onMove = ({
   event,
   selection,
 }: SelectionEvent) => {
-  if (event?.shiftKey && props.mode==='layout') {
-    // console.log(event, selection);
-    // move keys by start distance
-    let delta = { x: 0, y: 0 };
-    delta.x = event.clientX - moveStart.value.x;
-    delta.y = event.clientY - moveStart.value.y;
-    console.log(delta);
-    // snap in every 0.25 of a key width 58
-    const deltaTmp = {
-      x: roundNearQtr(delta.x / 58),
-      y: roundNearQtr(delta.y / 58),
-    };
-    // subtract already written distance
-    console.log(deltaTmp);
-    const writableDelta = {
-      x: deltaTmp.x - writtenDelta.value.x,
-      y: deltaTmp.y - writtenDelta.value.y,
-    };
-    writtenDelta.value.x = deltaTmp.x;
-    writtenDelta.value.y = deltaTmp.y;
-    console.log("w", writableDelta);
-    // write to each key
-    selectedKeys.value.forEach((keyIndex) => {
-      selectedConfig.value.layouts.keymap[keyIndex].x =
-        selectedConfig.value.layouts.keymap[keyIndex].x + writableDelta.x;
-      selectedConfig.value.layouts.keymap[keyIndex].y =
-        selectedConfig.value.layouts.keymap[keyIndex].y + writableDelta.y;
-    });
+  if (event?.shiftKey && props.mode === "layout") {
+    if (event instanceof MouseEvent) {
+      // console.log(event, selection);
+      // move keys by start distance
+      let delta = { x: 0, y: 0 };
+      delta.x = event.clientX - moveStart.value.x;
+      delta.y = event.clientY - moveStart.value.y;
+      console.log(delta);
+      // snap in every 0.25 of a key width 58
+      const deltaTmp = {
+        x: roundNearQtr(delta.x / 58),
+        y: roundNearQtr(delta.y / 58),
+      };
+      // subtract already written distance
+      console.log(deltaTmp);
+      const writableDelta = {
+        x: deltaTmp.x - writtenDelta.value.x,
+        y: deltaTmp.y - writtenDelta.value.y,
+      };
+      writtenDelta.value.x = deltaTmp.x;
+      writtenDelta.value.y = deltaTmp.y;
+      console.log("w", writableDelta);
+      // write to each key
+      selectedKeys.value.forEach((keyIndex) => {
+        selectedConfig.value!.layouts.keymap[keyIndex].x =
+          selectedConfig.value!.layouts.keymap[keyIndex].x + writableDelta.x;
+        selectedConfig.value!.layouts.keymap[keyIndex].y =
+          selectedConfig.value!.layouts.keymap[keyIndex].y + writableDelta.y;
+      });
+    }
     return;
   }
   extractIndexes(added).forEach((id) => selectedKeys.value.add(id));

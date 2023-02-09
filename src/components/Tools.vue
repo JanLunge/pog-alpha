@@ -58,7 +58,7 @@
     </div>
 
     <keyboard-layout
-      :key-layout="{ keys: selectedConfig.layouts.keymap }"
+      :key-layout="{ keys: selectedConfig?.layouts.keymap }"
       mode="layout"
     />
     <div class="flex">
@@ -67,7 +67,7 @@
       </div>
       <div class="w-1/2 pl-2">
         <key-layout-info
-          :layout="selectedConfig.layouts.keymap"
+          :layout="selectedConfig?.layouts.keymap"
         ></key-layout-info>
       </div>
     </div>
@@ -93,14 +93,13 @@ import {
   selectedConfig,
 } from "@/store";
 import KeyboardLayout from "@/components/KeyboardLayout.vue";
-selectedKeys.value.clear();
 import { isNumber, onKeyStroke } from "@vueuse/core";
 import KeyLayoutInfo from "@/components/KeyLayoutInfo.vue";
 import VariantSwitcher from "@/components/VariantSwitcher.vue";
 const kleInput = ref("");
 const pogOutput = ref("");
 const showRawPogLayout = ref(false);
-
+selectedKeys.value.clear();
 const emit = defineEmits(["next"]);
 const converterVisible = ref(false);
 const showConverter = () => {
@@ -175,8 +174,8 @@ const saveKeymap = async () => {
 const addKey = () => {
   // add key to the last position (+ keywidth ) + 1
   // dasically just to not have them overlap
-  if (selectedConfig.value.layouts.keymap.length === 0) {
-    selectedConfig.value.layouts.keymap.push({
+  if (selectedConfig.value!.layouts.keymap.length === 0) {
+    selectedConfig.value!.layouts.keymap.push({
       x: 0,
       y: 0,
       matrix: [],
@@ -186,12 +185,13 @@ const addKey = () => {
       x: 0,
       y: 0,
       matrix: [],
+      w: 1
     };
-    selectedConfig.value.layouts.keymap.forEach((key) => {
+    selectedConfig.value!.layouts.keymap.forEach((key) => {
       if (lastkey.y < key.y) lastkey = key;
       if (lastkey.y === key.y && lastkey.x < key.x) lastkey = key;
     });
-    selectedConfig.value.layouts.keymap.push({
+    selectedConfig.value!.layouts.keymap.push({
       x: lastkey.x + (lastkey.w || 1),
       y: lastkey.y,
       matrix: [],
@@ -200,8 +200,8 @@ const addKey = () => {
 };
 
 const removeKey = () => {
-  selectedConfig.value.layouts.keymap =
-    selectedConfig.value.layouts.keymap.filter((key, index) => {
+  selectedConfig.value!.layouts.keymap =
+    selectedConfig.value!.layouts.keymap.filter((key, index) => {
       return !selectedKeys.value.has(index);
     });
   selectedKeys.value.clear();
@@ -210,22 +210,22 @@ const removeKey = () => {
 onMounted(() => {
   // move keys with arrows
 
-  onKeyStroke("ArrowDown", (e) => {
+  onKeyStroke("ArrowDown", (e:KeyboardEvent) => {
     e.preventDefault();
 
     selectedKeys.value.forEach((keyIndex) => {
-      selectedConfig.value.layouts.keymap[keyIndex].y =
-        selectedConfig.value.layouts.keymap[keyIndex].y + 0.25;
+      selectedConfig.value!.layouts.keymap[keyIndex].y =
+        selectedConfig.value!.layouts.keymap[keyIndex].y + 0.25;
     });
   });
-  onKeyStroke("ArrowUp", (e) => {
+  onKeyStroke("ArrowUp", (e: KeyboardEvent) => {
     e.preventDefault();
     selectedKeys.value.forEach((keyIndex) => {
-      selectedConfig.value.layouts.keymap[keyIndex].y =
-        selectedConfig.value.layouts.keymap[keyIndex].y - 0.25;
+      selectedConfig.value!.layouts.keymap[keyIndex].y =
+        selectedConfig.value!.layouts.keymap[keyIndex].y - 0.25;
     });
   });
-  onKeyStroke("ArrowLeft", (e) => {
+  onKeyStroke("ArrowLeft", (e:KeyboardEvent) => {
     e.preventDefault();
     if (e.altKey && selectedKeys.value.size === 1) {
       // alt select next key
@@ -235,17 +235,17 @@ onMounted(() => {
     if (e.shiftKey) {
       // set key width
       selectedKeys.value.forEach((keyIndex) => {
-        selectedConfig.value.layouts.keymap[keyIndex].w =
-          selectedConfig.value.layouts.keymap[keyIndex].w - 0.25;
+        selectedConfig.value!.layouts.keymap[keyIndex].w =
+          selectedConfig.value!.layouts.keymap[keyIndex].w - 0.25;
       });
       return;
     }
     selectedKeys.value.forEach((keyIndex) => {
-      selectedConfig.value.layouts.keymap[keyIndex].x =
-        selectedConfig.value.layouts.keymap[keyIndex].x - 0.25;
+      selectedConfig.value!.layouts.keymap[keyIndex].x =
+        selectedConfig.value!.layouts.keymap[keyIndex].x - 0.25;
     });
   });
-  onKeyStroke("ArrowRight", (e) => {
+  onKeyStroke("ArrowRight", (e:KeyboardEvent) => {
     e.preventDefault();
     if (e.altKey && [...selectedKeys.value].length === 1) {
       // alt select next key
@@ -255,14 +255,14 @@ onMounted(() => {
     if (e.shiftKey) {
       // set key width
       selectedKeys.value.forEach((keyIndex) => {
-        selectedConfig.value.layouts.keymap[keyIndex].w =
-          Number(selectedConfig.value.layouts.keymap[keyIndex].w) + 0.25;
+        selectedConfig.value!.layouts.keymap[keyIndex].w =
+          Number(selectedConfig.value!.layouts.keymap[keyIndex].w) + 0.25;
       });
       return;
     }
     selectedKeys.value.forEach((keyIndex) => {
-      selectedConfig.value.layouts.keymap[keyIndex].x =
-        selectedConfig.value.layouts.keymap[keyIndex].x + 0.25;
+      selectedConfig.value!.layouts.keymap[keyIndex].x =
+        selectedConfig.value!.layouts.keymap[keyIndex].x + 0.25;
     });
   });
 });
