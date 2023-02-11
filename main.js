@@ -182,7 +182,6 @@ const handleKeymapSave = (jsondata) => {
 
 import board
 import supervisor
-import board
 import digitalio
 import storage
 import usb_cdc

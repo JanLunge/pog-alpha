@@ -2,6 +2,13 @@
 import { RouterLink, RouterView } from 'vue-router'
 import {useRoute} from "vue-router";
 const router = useRoute()
+
+import {keyboardStore} from "@/store";
+import {computed} from "vue";
+
+const store = computed(()=>{
+  return keyboardStore
+})
 </script>
 
 <template>

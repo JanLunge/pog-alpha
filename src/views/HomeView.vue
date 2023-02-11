@@ -6,7 +6,7 @@ import NewKeyboardSetup from "@/views/newKeyboardSetup.vue";
 import { selectedKeyboard } from "@/store";
 import router from "@/router";
 import { openFolderModal } from "@/helpers/electron";
-
+import { keyboardStore } from "@/store";
 const wizardStep = ref(0);
 const selectKeyboard = async () => {
   const selection = await openFolderModal();
@@ -30,7 +30,6 @@ const selectKeyboard = async () => {
       <h1 class="text-5xl font-bold">pog</h1>
       <p class="pt-6">Effortlessly customize your keyboard with Pog</p>
       <div class="divider"></div>
-
       <!--      <div class="p-8">-->
       <!--        <p class="pb-4 text-xl">Your Keyboards</p>-->
       <!--        <div class="flex items-center justify-center">-->
@@ -45,7 +44,15 @@ const selectKeyboard = async () => {
 
       <div class="m-4 flex-grow justify-center flex flex-col">
         <p class="pb-2">select a keyboard drive to continue</p>
-        <p>(Note: your controller needs to be running <a href="https://circuitpython.org/downloads" target="_blank" class="link">circuit python</a>)</p>
+        <p>
+          (Note: your controller needs to be running
+          <a
+            href="https://circuitpython.org/downloads"
+            target="_blank"
+            class="link"
+            >circuit python</a
+          >)
+        </p>
         <button class="btn btn-primary mt-4" @click="selectKeyboard">
           Select Keyboard Drive
         </button>

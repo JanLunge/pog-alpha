@@ -19,6 +19,7 @@
           transform: `scale( ${keyboardScale})`,
         }"
         style="transform-origin: center left"
+        :class="{dragging: moving}"
       >
         <div
           class="rotation-origin-helper"
@@ -49,6 +50,7 @@ import { selectedConfig, selectedKey, selectedKeys } from "@/store";
 import { SelectionArea } from "@viselect/vue";
 import type { SelectionEvent } from "@viselect/vue";
 import { isNumber } from "@vueuse/core";
+import { useDebounceFn } from '@vueuse/core'
 const props = defineProps(["keyLayout", "mode"]);
 // mode can be layout or keymap
 
@@ -183,10 +185,11 @@ const onMove = ({
   if (event?.shiftKey && props.mode === "layout") {
     if (event instanceof MouseEvent) {
       // console.log(event, selection);
+      moving.value = true;
       // move keys by start distance
       let delta = { x: 0, y: 0 };
-      delta.x = event.clientX - moveStart.value.x;
-      delta.y = event.clientY - moveStart.value.y;
+      delta.x = (event.clientX - moveStart.value.x ) * (1/keyboardScale.value);
+      delta.y = (event.clientY - moveStart.value.y) *(1/ keyboardScale.value);
       console.log(delta);
       // snap in every 0.25 of a key width 58
       const deltaTmp = {
@@ -210,12 +213,17 @@ const onMove = ({
           selectedConfig.value!.layouts.keymap[keyIndex].y + writableDelta.y;
       });
     }
+
+    resetMoving()
     return;
   }
   extractIndexes(added).forEach((id) => selectedKeys.value.add(id));
   extractIndexes(removed).forEach((id) => selectedKeys.value.delete(id));
   console.log(added, removed);
 };
+const resetMoving = useDebounceFn(() => {
+  moving.value = false
+}, 1000)
 </script>
 
 <style lang="scss" scoped>

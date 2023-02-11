@@ -32,18 +32,23 @@ then to package the application run
 `yarn dist`
 
 # Tasks
-
-- [x] Layout editor to replace KLE
-- [x] save pog.json (use as main storage for everything)
+## urgent
 - [ ] boot.py generation
 - [ ] share pog.json files
 - [ ] use injection points from the pog.json for codeblocks
-- [x] adjust keymap when matrix changes
+- [ ] direct pin wiring support
+- [ ] bluetooth workflow
+
+## features
 - [ ] dragging keys on the layout editor
 - [ ] language switcher for german and other layouts changing the labels on the keymap
 - [ ] modtap/tapdance/macros/sequences
 - [ ] encoder support direct pin click
 - [ ] way to handle differences between pog.json to kmk code
-
 - [ ] wiring preview
-- [ ] drag and drop keys
+
+## done
+- [x] Layout editor to replace KLE
+- [x] save pog.json (use as main storage for everything)
+- [x] adjust keymap when matrix changes
+- [x] drag and drop keys

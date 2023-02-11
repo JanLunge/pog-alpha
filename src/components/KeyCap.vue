@@ -12,11 +12,11 @@
       transform: `rotate(${keyData.r}deg)`,
       transformOrigin: rotationOrigin,
     }"
+    :class="{ selected: mainSelected }"
   >
     <div
       class="keyborder-blocker"
       v-if="keyData.w2 || keyData.h2"
-      :class="{ selected: mainSelected }"
       :style="{
         left: '1px',
         top: '1px',
@@ -26,7 +26,6 @@
     ></div>
     <div
       class="keyborder"
-      :class="{ selected: mainSelected }"
       :style="{
         width: keyWidth + 'px',
         height: keyHeight + 'px',
@@ -73,10 +72,7 @@
       </div>
       <div v-else class="keylabel">
         <div class="arg-top">{{ mainLabel }}</div>
-        <div
-          class="arg-bottom"
-          :class="{ selected: argsSelected }"
-        >
+        <div class="arg-bottom" :class="{ selected: argsSelected }">
           {{ argLabel }}
         </div>
       </div>
@@ -92,7 +88,7 @@ import {
   selectedKey,
   selectedLayer,
   selectedVariants,
-  selectedKeys
+  selectedKeys,
 } from "@/store";
 
 const props = defineProps(["keyData", "keyIndex", "mode"]);
@@ -253,16 +249,16 @@ const argsSelected = ref(false);
 //   }
 // );
 watch(
-    ()=>[...selectedKeys.value],
-    (newValue) => {
-      if (selectedKeys.value.has(props.keyIndex)) {
-        mainSelected.value = true;
-        argsSelected.value = false;
-      }else{
-        mainSelected.value = false;
-        argsSelected.value = false;
-      }
+  () => [...selectedKeys.value],
+  (newValue) => {
+    if (selectedKeys.value.has(props.keyIndex)) {
+      mainSelected.value = true;
+      argsSelected.value = false;
+    } else {
+      mainSelected.value = false;
+      argsSelected.value = false;
     }
+  }
 );
 const rotationOrigin = computed(() => {
   if (!props.keyData.rx || !props.keyData.ry) return "0 0";
@@ -284,8 +280,11 @@ const rotationOrigin = computed(() => {
   border: 1px solid transparent;
   cursor: pointer;
   @apply rounded;
-  &.selected {
+  z-index: 0;
+  .selected & {
     border-color: white;
+    z-index: 4;
+    box-shadow: rgba(0, 0, 0, 0.6) 2px 2px 8px 0;
   }
 }
 .keyborder-blocker {
@@ -308,6 +307,9 @@ const rotationOrigin = computed(() => {
   cursor: pointer;
   @apply rounded;
   z-index: 2;
+  .selected & {
+    z-index: 5;
+  }
 }
 .keylabels {
   position: absolute;
@@ -317,6 +319,9 @@ const rotationOrigin = computed(() => {
   top: 4px;
   right: 6px;
   z-index: 3;
+  .selected & {
+    z-index: 6;
+  }
 }
 .keylabel {
   font-size: 12px;
@@ -364,7 +369,9 @@ const rotationOrigin = computed(() => {
   //width: 54px;
   //height: 54px;
   @apply transition-all;
-
+  .dragging & {
+    transition: all 0.08s ease-out;
+  }
 }
 //.keycap {
 //  width: 50px;

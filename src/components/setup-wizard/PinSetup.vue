@@ -13,6 +13,13 @@
   >
     Next
   </div>
+  <div>
+    <p>Wiring Method</p>
+  <select class="select select-bordered">
+    <option value="">Matrix</option>
+    <option value="">Direct Pins</option>
+  </select>
+  </div>
   <div class="flex gap-4 mt-5 justify-center" v-if="selectedConfig">
     <div class="flex-grow-0">
       <div
@@ -133,7 +140,7 @@ const pinsCompleted = computed(() => {
 });
 
 const initialSetup = computed(()=>{
-  return router.currentRoute.value.name !== 'pins'
+  return router.currentRoute.value.path !== "/";
 })
 </script>
 
