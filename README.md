@@ -1,3 +1,4 @@
+Archived: New version is avaiable here [POG Release](https://github.com/JanLunge/pog)
 # pog 
 keyboard flashing utility
 
